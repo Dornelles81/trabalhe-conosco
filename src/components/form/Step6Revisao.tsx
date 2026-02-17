@@ -101,7 +101,6 @@ export default function Step6Revisao({ data, onPrev, onSubmit, isSubmitting, goT
         <Field label="CTPS" value={data.ctps} />
         <Field label="Série CTPS" value={data.serie_ctps} />
         <Field label="PIS/PASEP" value={data.pis} />
-        <Field label="Título de Eleitor" value={data.titulo_eleitor} />
       </Section>
 
       <Section title="Família e Dependentes" step={4} goToStep={goToStep}>

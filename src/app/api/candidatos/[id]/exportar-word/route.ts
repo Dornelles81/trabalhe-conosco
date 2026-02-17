@@ -158,7 +158,6 @@ export async function GET(
                 row4('Órgão Emissor', c.orgao_emissor || '—', 'Data Emissão', formatDate(c.data_emissao_rg)),
                 row4('CTPS', c.ctps || '—', 'Série', c.serie_ctps || '—'),
                 row('PIS/PASEP', c.pis || '—'),
-                row4('Título Eleitor', c.titulo_eleitor || '—', 'Zona/Seção', `${c.zona_eleitoral || '—'}/${c.secao_eleitoral || '—'}`),
               ],
             }),
 

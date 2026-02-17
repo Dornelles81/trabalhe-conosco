@@ -33,9 +33,6 @@ CREATE TABLE IF NOT EXISTS candidatos (
   ctps VARCHAR(20),
   serie_ctps VARCHAR(10),
   pis VARCHAR(20),
-  titulo_eleitor VARCHAR(20),
-  zona_eleitoral VARCHAR(10),
-  secao_eleitoral VARCHAR(10),
 
   -- Step 4: Família
   possui_dependentes BOOLEAN DEFAULT FALSE,

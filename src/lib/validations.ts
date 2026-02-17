@@ -35,9 +35,6 @@ export const step3Schema = z.object({
   ctps: z.string().optional(),
   serie_ctps: z.string().optional(),
   pis: z.string().optional(),
-  titulo_eleitor: z.string().optional(),
-  zona_eleitoral: z.string().optional(),
-  secao_eleitoral: z.string().optional(),
 })
 
 export const dependenteSchema = z.object({

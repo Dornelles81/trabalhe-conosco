@@ -33,9 +33,6 @@ interface Candidato {
   ctps: string
   serie_ctps: string
   pis: string
-  titulo_eleitor: string
-  zona_eleitoral: string
-  secao_eleitoral: string
   possui_dependentes: boolean
   escolaridade: string
   curso: string
@@ -140,7 +137,6 @@ export default function CandidatoModal({ candidatoId, onClose, onStatusChange }:
                 <Field label="RG" value={`${candidato.rg}${candidato.orgao_emissor ? ' - ' + candidato.orgao_emissor : ''}`} />
                 <Field label="CTPS/Série" value={candidato.ctps ? `${candidato.ctps}/${candidato.serie_ctps}` : ''} />
                 <Field label="PIS" value={candidato.pis} />
-                <Field label="Título Eleitor" value={candidato.titulo_eleitor} />
               </Section>
 
               {candidato.possui_dependentes && candidato.dependentes?.length > 0 && (

@@ -32,9 +32,6 @@ export default function Step3Documentos({ data, updateData, onNext, onPrev }: Pr
       ctps: data.ctps,
       serie_ctps: data.serie_ctps,
       pis: data.pis,
-      titulo_eleitor: data.titulo_eleitor,
-      zona_eleitoral: data.zona_eleitoral,
-      secao_eleitoral: data.secao_eleitoral,
     },
   })
 
@@ -106,24 +103,6 @@ export default function Step3Documentos({ data, updateData, onNext, onPrev }: Pr
         error={errors.pis?.message}
         placeholder="000.00000.00-0"
       />
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Input
-          label="Título de Eleitor"
-          {...register('titulo_eleitor')}
-          error={errors.titulo_eleitor?.message}
-        />
-        <Input
-          label="Zona Eleitoral"
-          {...register('zona_eleitoral')}
-          error={errors.zona_eleitoral?.message}
-        />
-        <Input
-          label="Seção Eleitoral"
-          {...register('secao_eleitoral')}
-          error={errors.secao_eleitoral?.message}
-        />
-      </div>
 
       <div className="flex justify-between pt-4">
         <Button type="button" variant="secondary" onClick={onPrev}>Anterior</Button>
