@@ -20,7 +20,8 @@
       "Bash(where:*)",
       "Bash(npx vercel:*)",
       "Bash(vercel:*)",
-      "Bash(npx next:*)"
+      "Bash(npx next:*)",
+      "Bash(printf:*)"
     ]
   }
 }

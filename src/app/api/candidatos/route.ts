@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/db'
 
+export const maxDuration = 30
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -56,12 +58,17 @@ export async function POST(request: NextRequest) {
     console.error('Erro ao criar candidato:', error)
     let message = 'Erro ao salvar cadastro'
     if (error instanceof Error) {
+      console.error('Detalhes do erro:', error.message)
       if (error.message.includes('unique')) {
         message = 'CPF já cadastrado no sistema'
       } else if (error.message.includes('password authentication')) {
         message = 'Erro de conexão com o banco de dados. Verifique as credenciais.'
       } else if (error.message.includes('connect') || error.message.includes('ENOTFOUND')) {
         message = 'Não foi possível conectar ao banco de dados. Verifique a configuração.'
+      } else if (error.message.includes('too large') || error.message.includes('body size') || error.message.includes('PAYLOAD')) {
+        message = 'Arquivo muito grande. Reduza o tamanho da foto do documento.'
+      } else {
+        message = `Erro ao salvar cadastro: ${error.message}`
       }
     }
     return NextResponse.json({ error: message }, { status: 500 })
