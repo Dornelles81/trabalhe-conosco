@@ -124,6 +124,7 @@ export default function Step6Revisao({ data, onPrev, onSubmit, isSubmitting, goT
         )}
         <Field label="Como soube" value={data.como_soube} />
         {data.observacoes && <Field label="Observações" value={data.observacoes} />}
+        <Field label="Documento (CNH/RG)" value={data.documento_foto_nome || '—'} />
       </Section>
 
       <div className="flex justify-between pt-4">

@@ -211,6 +211,7 @@ export async function GET(
                 row4('Exp. Eventos', c.experiencia_eventos ? 'Sim' : 'Não', 'Como soube', c.como_soube || '—'),
                 ...(c.experiencia_descricao ? [row('Experiência', c.experiencia_descricao)] : []),
                 ...(c.observacoes ? [row('Observações', c.observacoes)] : []),
+                row('Documento (CNH/RG)', c.documento_foto_nome || 'Não anexado'),
               ],
             }),
 

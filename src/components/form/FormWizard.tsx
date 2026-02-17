@@ -57,6 +57,9 @@ const defaultFormData: FormData = {
   disponibilidade: '',
   como_soube: '',
   observacoes: '',
+  documento_foto: '',
+  documento_foto_nome: '',
+  documento_foto_tipo: '',
 }
 
 export default function FormWizard() {
@@ -78,9 +81,11 @@ export default function FormWizard() {
     }
   }, [])
 
-  // Save to localStorage
+  // Save to localStorage (exclude large base64 photo)
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ data: formData, step: currentStep }))
+    const { documento_foto, ...dataToSave } = formData
+    void documento_foto
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ data: dataToSave, step: currentStep }))
   }, [formData, currentStep])
 
   const updateData = (stepData: Partial<FormData>) => {

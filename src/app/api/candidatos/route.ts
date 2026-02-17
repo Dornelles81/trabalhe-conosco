@@ -15,7 +15,8 @@ export async function POST(request: NextRequest) {
         orgao_emissor, data_emissao_rg, ctps, serie_ctps, pis,
         titulo_eleitor, zona_eleitoral, secao_eleitoral, possui_dependentes,
         escolaridade, curso, experiencia_eventos, experiencia_descricao,
-        cargo_pretendido, disponibilidade, como_soube, observacoes
+        cargo_pretendido, disponibilidade, como_soube, observacoes,
+        documento_foto, documento_foto_nome, documento_foto_tipo
       ) VALUES (
         ${body.nome_completo}, ${body.data_nascimento || null}, ${body.sexo},
         ${body.estado_civil}, ${body.nacionalidade},
@@ -33,7 +34,9 @@ export async function POST(request: NextRequest) {
         ${body.escolaridade || null}, ${body.curso || null},
         ${body.experiencia_eventos || false}, ${body.experiencia_descricao || null},
         ${body.cargo_pretendido || null}, ${body.disponibilidade || null},
-        ${body.como_soube || null}, ${body.observacoes || null}
+        ${body.como_soube || null}, ${body.observacoes || null},
+        ${body.documento_foto || null}, ${body.documento_foto_nome || null},
+        ${body.documento_foto_tipo || null}
       )
       RETURNING id
     `
@@ -81,7 +84,16 @@ export async function GET(request: NextRequest) {
 
     if (status && search) {
       candidatos = await sql`
-        SELECT * FROM candidatos
+        SELECT id, nome_completo, data_nascimento, sexo, estado_civil, nacionalidade, etnia,
+        possui_deficiencia, tipo_deficiencia, naturalidade, nome_pai, nome_mae,
+        cep, endereco, numero, complemento, bairro, cidade, estado, telefone, celular, email,
+        cpf, rg, orgao_emissor, data_emissao_rg, ctps, serie_ctps, pis,
+        titulo_eleitor, zona_eleitoral, secao_eleitoral, possui_dependentes,
+        escolaridade, curso, experiencia_eventos, experiencia_descricao,
+        cargo_pretendido, disponibilidade, como_soube, observacoes,
+        documento_foto_nome, documento_foto_tipo,
+        status, created_at, updated_at
+      FROM candidatos
         WHERE status = ${status}
         AND (nome_completo ILIKE ${'%' + search + '%'} OR cpf LIKE ${'%' + search + '%'})
         ORDER BY created_at DESC
@@ -94,13 +106,31 @@ export async function GET(request: NextRequest) {
       `
     } else if (status) {
       candidatos = await sql`
-        SELECT * FROM candidatos WHERE status = ${status}
+        SELECT id, nome_completo, data_nascimento, sexo, estado_civil, nacionalidade, etnia,
+        possui_deficiencia, tipo_deficiencia, naturalidade, nome_pai, nome_mae,
+        cep, endereco, numero, complemento, bairro, cidade, estado, telefone, celular, email,
+        cpf, rg, orgao_emissor, data_emissao_rg, ctps, serie_ctps, pis,
+        titulo_eleitor, zona_eleitoral, secao_eleitoral, possui_dependentes,
+        escolaridade, curso, experiencia_eventos, experiencia_descricao,
+        cargo_pretendido, disponibilidade, como_soube, observacoes,
+        documento_foto_nome, documento_foto_tipo,
+        status, created_at, updated_at
+      FROM candidatos WHERE status = ${status}
         ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}
       `
       countResult = await sql`SELECT COUNT(*) as total FROM candidatos WHERE status = ${status}`
     } else if (search) {
       candidatos = await sql`
-        SELECT * FROM candidatos
+        SELECT id, nome_completo, data_nascimento, sexo, estado_civil, nacionalidade, etnia,
+        possui_deficiencia, tipo_deficiencia, naturalidade, nome_pai, nome_mae,
+        cep, endereco, numero, complemento, bairro, cidade, estado, telefone, celular, email,
+        cpf, rg, orgao_emissor, data_emissao_rg, ctps, serie_ctps, pis,
+        titulo_eleitor, zona_eleitoral, secao_eleitoral, possui_dependentes,
+        escolaridade, curso, experiencia_eventos, experiencia_descricao,
+        cargo_pretendido, disponibilidade, como_soube, observacoes,
+        documento_foto_nome, documento_foto_tipo,
+        status, created_at, updated_at
+      FROM candidatos
         WHERE nome_completo ILIKE ${'%' + search + '%'} OR cpf LIKE ${'%' + search + '%'}
         ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}
       `
@@ -110,7 +140,16 @@ export async function GET(request: NextRequest) {
       `
     } else {
       candidatos = await sql`
-        SELECT * FROM candidatos ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}
+        SELECT id, nome_completo, data_nascimento, sexo, estado_civil, nacionalidade, etnia,
+        possui_deficiencia, tipo_deficiencia, naturalidade, nome_pai, nome_mae,
+        cep, endereco, numero, complemento, bairro, cidade, estado, telefone, celular, email,
+        cpf, rg, orgao_emissor, data_emissao_rg, ctps, serie_ctps, pis,
+        titulo_eleitor, zona_eleitoral, secao_eleitoral, possui_dependentes,
+        escolaridade, curso, experiencia_eventos, experiencia_descricao,
+        cargo_pretendido, disponibilidade, como_soube, observacoes,
+        documento_foto_nome, documento_foto_tipo,
+        status, created_at, updated_at
+      FROM candidatos ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}
       `
       countResult = await sql`SELECT COUNT(*) as total FROM candidatos`
     }

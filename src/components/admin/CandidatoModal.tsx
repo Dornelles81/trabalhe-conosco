@@ -45,6 +45,9 @@ interface Candidato {
   disponibilidade: string
   como_soube: string
   observacoes: string
+  documento_foto: string
+  documento_foto_nome: string
+  documento_foto_tipo: string
   status: string
   created_at: string
   dependentes: { id: number; nome: string; data_nascimento: string; parentesco: string; cpf: string }[]
@@ -158,6 +161,29 @@ export default function CandidatoModal({ candidatoId, onClose, onStatusChange }:
                 <Field label="Como soube" value={candidato.como_soube} />
                 {candidato.observacoes && <Field label="Observações" value={candidato.observacoes} />}
               </Section>
+
+              {candidato.documento_foto && (
+                <Section title="Documento (CNH/RG)">
+                  <div className="sm:col-span-2">
+                    <p className="text-mega-text-muted mb-2">Arquivo: {candidato.documento_foto_nome}</p>
+                    {candidato.documento_foto_tipo?.startsWith('image/') ? (
+                      <img
+                        src={candidato.documento_foto}
+                        alt="Documento"
+                        className="max-w-full max-h-96 rounded-lg border border-mega-border"
+                      />
+                    ) : (
+                      <a
+                        href={candidato.documento_foto}
+                        download={candidato.documento_foto_nome}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-mega-teal hover:bg-mega-teal-hover text-white rounded-lg text-sm font-medium transition-colors"
+                      >
+                        Baixar PDF
+                      </a>
+                    )}
+                  </div>
+                </Section>
+              )}
             </div>
 
             {/* Actions */}

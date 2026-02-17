@@ -11,7 +11,7 @@ export default function Header() {
             <span className="text-mega-teal">MEGA</span>{' '}
             <span className="text-mega-navy">FEIRA</span>
           </span>
-          <span className="text-xs text-mega-teal font-medium">
+          <span className="text-xs text-mega-text-secondary font-medium">
             acessando conexões
           </span>
         </Link>

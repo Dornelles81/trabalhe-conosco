@@ -50,6 +50,11 @@ CREATE TABLE IF NOT EXISTS candidatos (
   como_soube VARCHAR(100),
   observacoes TEXT,
 
+  -- Documento (foto CNH/RG)
+  documento_foto TEXT,
+  documento_foto_nome VARCHAR(255),
+  documento_foto_tipo VARCHAR(50),
+
   -- Metadata
   status VARCHAR(20) NOT NULL DEFAULT 'novo',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
