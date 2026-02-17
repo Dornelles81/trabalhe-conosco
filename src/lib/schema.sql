@@ -7,6 +7,8 @@ CREATE TABLE IF NOT EXISTS candidatos (
   estado_civil VARCHAR(30) NOT NULL,
   nacionalidade VARCHAR(100) NOT NULL DEFAULT 'Brasileira',
   etnia VARCHAR(30) NOT NULL DEFAULT '',
+  possui_deficiencia BOOLEAN DEFAULT FALSE,
+  tipo_deficiencia VARCHAR(50),
   naturalidade VARCHAR(100),
   nome_pai VARCHAR(255),
   nome_mae VARCHAR(255),

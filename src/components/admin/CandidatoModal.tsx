@@ -11,6 +11,8 @@ interface Candidato {
   estado_civil: string
   nacionalidade: string
   etnia: string
+  possui_deficiencia: boolean
+  tipo_deficiencia: string
   naturalidade: string
   nome_pai: string
   nome_mae: string
@@ -114,6 +116,7 @@ export default function CandidatoModal({ candidatoId, onClose, onStatusChange }:
                 <Field label="Estado Civil" value={candidato.estado_civil} />
                 <Field label="Nacionalidade" value={candidato.nacionalidade} />
                 <Field label="Etnia" value={candidato.etnia} />
+                <Field label="Deficiência" value={candidato.possui_deficiencia ? `Sim - ${candidato.tipo_deficiencia}` : 'Não'} />
                 <Field label="Naturalidade" value={candidato.naturalidade} />
                 <Field label="Pai" value={candidato.nome_pai} />
                 <Field label="Mãe" value={candidato.nome_mae} />

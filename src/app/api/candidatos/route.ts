@@ -9,7 +9,8 @@ export async function POST(request: NextRequest) {
     const [candidato] = await sql`
       INSERT INTO candidatos (
         nome_completo, data_nascimento, sexo, estado_civil, nacionalidade,
-        etnia, naturalidade, nome_pai, nome_mae, cep, endereco, numero, complemento,
+        etnia, possui_deficiencia, tipo_deficiencia,
+        naturalidade, nome_pai, nome_mae, cep, endereco, numero, complemento,
         bairro, cidade, estado, telefone, celular, email, cpf, rg,
         orgao_emissor, data_emissao_rg, ctps, serie_ctps, pis,
         titulo_eleitor, zona_eleitoral, secao_eleitoral, possui_dependentes,
@@ -18,7 +19,8 @@ export async function POST(request: NextRequest) {
       ) VALUES (
         ${body.nome_completo}, ${body.data_nascimento || null}, ${body.sexo},
         ${body.estado_civil}, ${body.nacionalidade},
-        ${body.etnia || ''}, ${body.naturalidade || null},
+        ${body.etnia || ''}, ${body.possui_deficiencia || false},
+        ${body.tipo_deficiencia || null}, ${body.naturalidade || null},
         ${body.nome_pai || null}, ${body.nome_mae || null}, ${body.cep},
         ${body.endereco}, ${body.numero}, ${body.complemento || null},
         ${body.bairro}, ${body.cidade}, ${body.estado},

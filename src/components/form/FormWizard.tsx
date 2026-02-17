@@ -22,6 +22,8 @@ const defaultFormData: FormData = {
   estado_civil: '',
   nacionalidade: 'Brasileira',
   etnia: '',
+  possui_deficiencia: false,
+  tipo_deficiencia: '',
   naturalidade: '',
   nome_pai: '',
   nome_mae: '',

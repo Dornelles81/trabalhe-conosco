@@ -6,6 +6,7 @@ import { step1Schema, Step1Data, FormData } from '@/lib/validations'
 import Input from '@/components/ui/Input'
 import DateInput from '@/components/ui/DateInput'
 import Select from '@/components/ui/Select'
+import Checkbox from '@/components/ui/Checkbox'
 import Button from '@/components/ui/Button'
 
 interface Props {
@@ -19,6 +20,7 @@ export default function Step1DadosPessoais({ data, updateData, onNext }: Props) 
     register,
     handleSubmit,
     control,
+    watch,
     formState: { errors },
   } = useForm<Step1Data>({
     resolver: zodResolver(step1Schema),
@@ -29,13 +31,20 @@ export default function Step1DadosPessoais({ data, updateData, onNext }: Props) 
       estado_civil: data.estado_civil,
       nacionalidade: data.nacionalidade,
       etnia: data.etnia,
+      possui_deficiencia: data.possui_deficiencia,
+      tipo_deficiencia: data.tipo_deficiencia,
       naturalidade: data.naturalidade,
       nome_pai: data.nome_pai,
       nome_mae: data.nome_mae,
     },
   })
 
+  const possuiDeficiencia = watch('possui_deficiencia')
+
   const onSubmit = (values: Step1Data) => {
+    if (!values.possui_deficiencia) {
+      values.tipo_deficiencia = ''
+    }
     updateData(values)
     onNext()
   }
@@ -114,6 +123,29 @@ export default function Step1DadosPessoais({ data, updateData, onNext }: Props) 
           { value: 'Indígena', label: 'Indígena' },
         ]}
       />
+
+      <div className="space-y-3">
+        <Checkbox
+          label="Possui Deficiência?"
+          {...register('possui_deficiencia')}
+        />
+        {possuiDeficiencia && (
+          <Select
+            label="Tipo de Deficiência"
+            required
+            {...register('tipo_deficiencia')}
+            error={errors.tipo_deficiencia?.message}
+            options={[
+              { value: 'Visual', label: 'Visual' },
+              { value: 'Auditivo', label: 'Auditivo' },
+              { value: 'Motora', label: 'Motora' },
+              { value: 'Físico', label: 'Físico' },
+              { value: 'Mental', label: 'Mental' },
+              { value: 'Intelectual', label: 'Intelectual' },
+            ]}
+          />
+        )}
+      </div>
 
       <Input
         label="Naturalidade"

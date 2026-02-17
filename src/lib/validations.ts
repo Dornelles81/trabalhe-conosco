@@ -7,6 +7,8 @@ export const step1Schema = z.object({
   estado_civil: z.string().min(1, 'Selecione o estado civil'),
   nacionalidade: z.string().min(1, 'Nacionalidade é obrigatória'),
   etnia: z.string().min(1, 'Etnia é obrigatória'),
+  possui_deficiencia: z.boolean(),
+  tipo_deficiencia: z.string().optional(),
   naturalidade: z.string().optional(),
   nome_pai: z.string().optional(),
   nome_mae: z.string().optional(),

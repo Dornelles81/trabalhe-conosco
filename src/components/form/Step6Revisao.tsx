@@ -73,6 +73,10 @@ export default function Step6Revisao({ data, onPrev, onSubmit, isSubmitting, goT
         <Field label="Estado Civil" value={data.estado_civil} />
         <Field label="Nacionalidade" value={data.nacionalidade} />
         <Field label="Etnia" value={data.etnia} />
+        <Field label="Possui Deficiência" value={data.possui_deficiencia} />
+        {data.possui_deficiencia && (
+          <Field label="Tipo de Deficiência" value={data.tipo_deficiencia} />
+        )}
         <Field label="Naturalidade" value={data.naturalidade} />
         <Field label="Nome do Pai" value={data.nome_pai} />
         <Field label="Nome da Mãe" value={data.nome_mae} />
