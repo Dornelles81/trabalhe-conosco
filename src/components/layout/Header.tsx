@@ -22,6 +22,12 @@ export default function Header() {
           >
             Trabalhe Conosco
           </Link>
+          <Link
+            href="/admin"
+            className="text-sm text-mega-text-muted hover:text-mega-navy transition-colors"
+          >
+            Admin
+          </Link>
         </nav>
       </div>
       <div className="h-0.5 bg-gradient-to-r from-mega-teal to-mega-teal"></div>
