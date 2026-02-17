@@ -1,0 +1,261 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getDb } from '@/lib/db'
+import {
+  Document,
+  Packer,
+  Paragraph,
+  Table,
+  TableRow,
+  TableCell,
+  TextRun,
+  WidthType,
+  AlignmentType,
+  BorderStyle,
+  HeadingLevel,
+} from 'docx'
+
+function cell(text: string, bold = false, width?: number): TableCell {
+  return new TableCell({
+    width: width ? { size: width, type: WidthType.PERCENTAGE } : undefined,
+    borders: {
+      top: { style: BorderStyle.SINGLE, size: 1 },
+      bottom: { style: BorderStyle.SINGLE, size: 1 },
+      left: { style: BorderStyle.SINGLE, size: 1 },
+      right: { style: BorderStyle.SINGLE, size: 1 },
+    },
+    children: [
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: text || '—',
+            bold,
+            size: 18,
+            font: 'Arial',
+          }),
+        ],
+        spacing: { before: 40, after: 40 },
+      }),
+    ],
+  })
+}
+
+function labelCell(text: string, width?: number): TableCell {
+  return cell(text, true, width)
+}
+
+function valueCell(text: string, width?: number): TableCell {
+  return cell(text, false, width)
+}
+
+function row(label: string, value: string, labelWidth = 30, valueWidth = 70): TableRow {
+  return new TableRow({
+    children: [labelCell(label, labelWidth), valueCell(value, valueWidth)],
+  })
+}
+
+function row4(l1: string, v1: string, l2: string, v2: string): TableRow {
+  return new TableRow({
+    children: [labelCell(l1, 20), valueCell(v1, 30), labelCell(l2, 20), valueCell(v2, 30)],
+  })
+}
+
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return '—'
+  try {
+    return new Date(dateStr + 'T00:00:00').toLocaleDateString('pt-BR')
+  } catch {
+    return dateStr
+  }
+}
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const sql = getDb()
+
+    const candidatos = await sql`SELECT * FROM candidatos WHERE id = ${id}`
+    if (!candidatos.length) {
+      return NextResponse.json({ error: 'Candidato não encontrado' }, { status: 404 })
+    }
+
+    const c = candidatos[0]
+    const dependentes = await sql`SELECT * FROM dependentes WHERE candidato_id = ${id} ORDER BY id`
+
+    const doc = new Document({
+      sections: [
+        {
+          properties: {
+            page: {
+              margin: { top: 720, right: 720, bottom: 720, left: 720 },
+            },
+          },
+          children: [
+            // Header
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [
+                new TextRun({ text: 'MEGA FEIRA', bold: true, size: 28, font: 'Arial' }),
+              ],
+              spacing: { after: 60 },
+            }),
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [
+                new TextRun({ text: 'FICHA DE CADASTRO DE CANDIDATO', bold: true, size: 22, font: 'Arial' }),
+              ],
+              spacing: { after: 200 },
+            }),
+
+            // Dados Pessoais
+            new Paragraph({
+              heading: HeadingLevel.HEADING_2,
+              children: [new TextRun({ text: 'DADOS PESSOAIS', bold: true, size: 20, font: 'Arial' })],
+              spacing: { before: 200, after: 100 },
+            }),
+            new Table({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              rows: [
+                row('Nome Completo', c.nome_completo),
+                row4('Data Nasc.', formatDate(c.data_nascimento), 'Sexo', c.sexo),
+                row4('Estado Civil', c.estado_civil, 'Nacionalidade', c.nacionalidade),
+                row4('Etnia', c.etnia || '—', 'Naturalidade', c.naturalidade || '—'),
+                row('Nome do Pai', c.nome_pai || '—'),
+                row('Nome da Mãe', c.nome_mae || '—'),
+              ],
+            }),
+
+            // Endereço
+            new Paragraph({
+              heading: HeadingLevel.HEADING_2,
+              children: [new TextRun({ text: 'ENDEREÇO E CONTATO', bold: true, size: 20, font: 'Arial' })],
+              spacing: { before: 200, after: 100 },
+            }),
+            new Table({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              rows: [
+                row4('CEP', c.cep, 'Estado', c.estado),
+                row('Endereço', `${c.endereco}, ${c.numero}${c.complemento ? ' - ' + c.complemento : ''}`),
+                row4('Bairro', c.bairro, 'Cidade', c.cidade),
+                row4('Celular', c.celular, 'Telefone', c.telefone || '—'),
+                row('E-mail', c.email || '—'),
+              ],
+            }),
+
+            // Documentos
+            new Paragraph({
+              heading: HeadingLevel.HEADING_2,
+              children: [new TextRun({ text: 'DOCUMENTOS', bold: true, size: 20, font: 'Arial' })],
+              spacing: { before: 200, after: 100 },
+            }),
+            new Table({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              rows: [
+                row4('CPF', c.cpf, 'RG', c.rg),
+                row4('Órgão Emissor', c.orgao_emissor || '—', 'Data Emissão', formatDate(c.data_emissao_rg)),
+                row4('CTPS', c.ctps || '—', 'Série', c.serie_ctps || '—'),
+                row('PIS/PASEP', c.pis || '—'),
+                row4('Título Eleitor', c.titulo_eleitor || '—', 'Zona/Seção', `${c.zona_eleitoral || '—'}/${c.secao_eleitoral || '—'}`),
+              ],
+            }),
+
+            // Dependentes
+            ...(c.possui_dependentes && dependentes.length > 0
+              ? [
+                  new Paragraph({
+                    heading: HeadingLevel.HEADING_2,
+                    children: [new TextRun({ text: 'DEPENDENTES', bold: true, size: 20, font: 'Arial' })],
+                    spacing: { before: 200, after: 100 },
+                  }),
+                  new Table({
+                    width: { size: 100, type: WidthType.PERCENTAGE },
+                    rows: [
+                      new TableRow({
+                        children: [
+                          labelCell('Nome', 35),
+                          labelCell('Nascimento', 20),
+                          labelCell('Parentesco', 20),
+                          labelCell('CPF', 25),
+                        ],
+                      }),
+                      ...dependentes.map(
+                        (dep) =>
+                          new TableRow({
+                            children: [
+                              valueCell(String(dep.nome || ''), 35),
+                              valueCell(formatDate(dep.data_nascimento as string), 20),
+                              valueCell(String(dep.parentesco || ''), 20),
+                              valueCell(String(dep.cpf || '—'), 25),
+                            ],
+                          })
+                      ),
+                    ],
+                  }),
+                ]
+              : []),
+
+            // Informações Adicionais
+            new Paragraph({
+              heading: HeadingLevel.HEADING_2,
+              children: [new TextRun({ text: 'INFORMAÇÕES ADICIONAIS', bold: true, size: 20, font: 'Arial' })],
+              spacing: { before: 200, after: 100 },
+            }),
+            new Table({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              rows: [
+                row4('Escolaridade', c.escolaridade || '—', 'Curso', c.curso || '—'),
+                row4('Cargo Pretendido', c.cargo_pretendido || '—', 'Disponibilidade', c.disponibilidade || '—'),
+                row4('Exp. Eventos', c.experiencia_eventos ? 'Sim' : 'Não', 'Como soube', c.como_soube || '—'),
+                ...(c.experiencia_descricao ? [row('Experiência', c.experiencia_descricao)] : []),
+                ...(c.observacoes ? [row('Observações', c.observacoes)] : []),
+              ],
+            }),
+
+            // Signature
+            new Paragraph({ text: '', spacing: { before: 600 } }),
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [
+                new TextRun({ text: '________________________________________', size: 18, font: 'Arial' }),
+              ],
+            }),
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [
+                new TextRun({ text: c.nome_completo, size: 18, font: 'Arial' }),
+              ],
+              spacing: { before: 60 },
+            }),
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [
+                new TextRun({
+                  text: `Data: ${new Date().toLocaleDateString('pt-BR')}`,
+                  size: 16,
+                  font: 'Arial',
+                  color: '666666',
+                }),
+              ],
+              spacing: { before: 60 },
+            }),
+          ],
+        },
+      ],
+    })
+
+    const buffer = await Packer.toBuffer(doc)
+    const safeName = c.nome_completo.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_')
+
+    return new NextResponse(new Uint8Array(buffer), {
+      headers: {
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'Content-Disposition': `attachment; filename="Ficha_${safeName}.docx"`,
+      },
+    })
+  } catch (error) {
+    console.error('Erro ao exportar Word:', error)
+    return NextResponse.json({ error: 'Erro ao exportar Word' }, { status: 500 })
+  }
+}
