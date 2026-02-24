@@ -319,7 +319,7 @@ export default function AdminDashboard() {
                           <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                             {isContratado ? (
                               <PresencaToggle
-                                pres={presencaMap.has(c.id) ? pres : null}
+                                pres={pres ?? null}
                                 isLoaded={presencaMap.has(c.id)}
                                 isUpdating={updatingIds.has(c.id)}
                                 onToggle={tipo => handlePresenca(c.id, tipo)}
