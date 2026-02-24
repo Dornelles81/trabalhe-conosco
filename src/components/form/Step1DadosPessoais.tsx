@@ -13,9 +13,10 @@ interface Props {
   data: FormData
   updateData: (data: Partial<FormData>) => void
   onNext: () => void
+  onReset?: () => void
 }
 
-export default function Step1DadosPessoais({ data, updateData, onNext }: Props) {
+export default function Step1DadosPessoais({ data, updateData, onNext, onReset }: Props) {
   const {
     register,
     handleSubmit,
@@ -166,7 +167,12 @@ export default function Step1DadosPessoais({ data, updateData, onNext }: Props) 
         error={errors.nome_mae?.message}
       />
 
-      <div className="flex justify-end pt-4">
+      <div className="flex justify-between pt-4">
+        {onReset && (
+          <Button type="button" variant="secondary" onClick={onReset}>
+            Limpar formulário
+          </Button>
+        )}
         <Button type="submit">Próximo</Button>
       </div>
     </form>

@@ -93,6 +93,14 @@ export default function FormWizard() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const handleReset = () => {
+    if (!confirm('Tem certeza que deseja limpar todos os dados e começar do zero?')) return
+    localStorage.removeItem(STORAGE_KEY)
+    setFormData(defaultFormData)
+    setCurrentStep(1)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   const handleSubmit = async () => {
     setIsSubmitting(true)
     setSubmitError('')
@@ -121,7 +129,7 @@ export default function FormWizard() {
   const renderStep = () => {
     const common = { data: formData, updateData }
     switch (currentStep) {
-      case 1: return <Step1DadosPessoais {...common} onNext={nextStep} />
+      case 1: return <Step1DadosPessoais {...common} onNext={nextStep} onReset={handleReset} />
       case 2: return <Step2EnderecoContato {...common} onNext={nextStep} onPrev={prevStep} />
       case 3: return <Step3Documentos {...common} onNext={nextStep} onPrev={prevStep} />
       case 4: return <Step5InformacoesAdicionais {...common} onNext={nextStep} onPrev={prevStep} />
@@ -131,6 +139,7 @@ export default function FormWizard() {
             data={formData}
             onPrev={prevStep}
             onSubmit={handleSubmit}
+            onReset={handleReset}
             isSubmitting={isSubmitting}
             goToStep={setCurrentStep}
           />

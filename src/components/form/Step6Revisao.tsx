@@ -14,6 +14,7 @@ interface Props {
   data: FormData
   onPrev: () => void
   onSubmit: () => void
+  onReset: () => void
   isSubmitting: boolean
   goToStep: (step: number) => void
 }
@@ -58,7 +59,7 @@ function Field({ label, value }: { label: string; value?: string | boolean }) {
   )
 }
 
-export default function Step6Revisao({ data, onPrev, onSubmit, isSubmitting, goToStep }: Props) {
+export default function Step6Revisao({ data, onPrev, onSubmit, onReset, isSubmitting, goToStep }: Props) {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold text-mega-navy mb-6">Revisão do Cadastro</h2>
@@ -113,7 +114,10 @@ export default function Step6Revisao({ data, onPrev, onSubmit, isSubmitting, goT
       </Section>
 
       <div className="flex justify-between pt-4">
-        <Button type="button" variant="secondary" onClick={onPrev}>Anterior</Button>
+        <div className="flex gap-2">
+          <Button type="button" variant="secondary" onClick={onPrev}>Anterior</Button>
+          <Button type="button" variant="secondary" onClick={onReset}>Limpar</Button>
+        </div>
         <Button onClick={onSubmit} loading={isSubmitting}>
           Enviar Cadastro
         </Button>
