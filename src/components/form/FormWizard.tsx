@@ -41,6 +41,8 @@ const defaultFormData: FormData = {
   orgao_emissor: '',
   data_emissao_rg: '',
   pis: '',
+  possui_dependentes: false,
+  dependentes: [],
   escolaridade: '',
   curso: '',
   experiencia_eventos: false,
