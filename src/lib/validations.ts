@@ -35,6 +35,16 @@ export const step3Schema = z.object({
   pis: z.string().min(13, 'PIS/PASEP inválido'),
 })
 
+export const step4Schema = z.object({
+  possui_dependentes: z.boolean(),
+  dependentes: z.array(z.object({
+    nome: z.string().min(1, 'Nome é obrigatório'),
+    data_nascimento: z.string().min(1, 'Data de nascimento é obrigatória'),
+    parentesco: z.string().min(1, 'Parentesco é obrigatório'),
+    cpf: z.string().optional(),
+  })).optional(),
+})
+
 export const step5Schema = z.object({
   escolaridade: z.string().min(1, 'Escolaridade é obrigatória'),
   curso: z.string().optional(),
@@ -49,6 +59,7 @@ export const step5Schema = z.object({
 export type Step1Data = z.infer<typeof step1Schema>
 export type Step2Data = z.infer<typeof step2Schema>
 export type Step3Data = z.infer<typeof step3Schema>
+export type Step4Data = z.infer<typeof step4Schema>
 export type Step5Data = z.infer<typeof step5Schema>
 
-export type FormData = Step1Data & Step2Data & Step3Data & Step5Data
+export type FormData = Step1Data & Step2Data & Step3Data & Step4Data & Step5Data
