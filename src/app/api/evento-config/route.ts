@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { neon } from '@neondatabase/serverless'
+import { getDb } from '@/lib/db'
 
 export async function GET() {
   try {
-    const sql = neon(process.env.DATABASE_URL!)
+    const sql = getDb()
     const rows = await sql`SELECT id, dias_total, valor_diaria, premiacao FROM evento_config WHERE id = 1`
     const config = rows[0] ?? { id: 1, dias_total: 6, valor_diaria: 180.00, premiacao: 0 }
     return NextResponse.json(config)
@@ -24,7 +24,7 @@ export async function PUT(req: Request) {
   }
 
   try {
-    const sql = neon(process.env.DATABASE_URL!)
+    const sql = getDb()
     const [config] = await sql`
       INSERT INTO evento_config (id, dias_total, valor_diaria, premiacao, updated_at)
       VALUES (1, ${dias_total}, ${valor_diaria}, ${isNaN(premiacao) ? 0 : premiacao}, NOW())

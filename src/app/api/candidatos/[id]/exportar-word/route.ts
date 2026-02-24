@@ -208,9 +208,11 @@ export async function GET(
                 row4('Escolaridade', c.escolaridade || '—', 'Curso', c.curso || '—'),
                 row4('Cargo Pretendido', c.cargo_pretendido || '—', 'Disponibilidade', c.disponibilidade || '—'),
                 row4('Exp. Eventos', c.experiencia_eventos ? 'Sim' : 'Não', 'Como soube', c.como_soube || '—'),
-                ...(c.experiencia_descricao ? [row('Experiência', c.experiencia_descricao)] : []),
+                ...(c.experiencia_descricao ? [row('Exp. em Eventos (Detalhe)', c.experiencia_descricao)] : []),
+                ...(c.experiencia_profissional ? [row('Experiência Profissional', c.experiencia_profissional)] : []),
                 ...(c.observacoes ? [row('Observações', c.observacoes)] : []),
                 row('Documento (CNH/RG)', c.documento_foto_nome || 'Não anexado'),
+                row('Currículo', c.curriculo_nome || 'Não anexado'),
               ],
             }),
 

@@ -17,8 +17,19 @@ interface CandidatoRow {
   cpf: string
   celular: string
   cargo_pretendido: string
+  documento_foto_nome: string | null
+  curriculo_nome: string | null
   status: string
   created_at: string
+}
+
+interface StatusCounts {
+  novo: number
+  em_analise: number
+  aprovado: number
+  reprovado: number
+  contratado: number
+  total_geral: number
 }
 
 // null = contratado mas ausente | {id, periodo} = registrado
@@ -35,6 +46,7 @@ export default function AdminDashboard() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
+  const [counts, setCounts] = useState<StatusCounts>({ novo: 0, em_analise: 0, aprovado: 0, reprovado: 0, contratado: 0, total_geral: 0 })
   const [selectedId, setSelectedId] = useState<number | null>(null)
 
   // Configuração do evento
@@ -64,6 +76,7 @@ export default function AdminDashboard() {
       setCandidatos(data.candidatos || [])
       setTotalPages(data.totalPages || 1)
       setTotal(data.total || 0)
+      if (data.counts) setCounts(data.counts)
     } catch (err) {
       console.error(err)
     } finally {
@@ -149,7 +162,7 @@ export default function AdminDashboard() {
     router.push('/admin')
   }
 
-  const colCount = presencaDia !== null ? 7 : 6
+  const colCount = presencaDia !== null ? 8 : 7
 
   return (
     <div className="min-h-screen bg-mega-bg">
@@ -169,11 +182,12 @@ export default function AdminDashboard() {
 
       <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <StatCard label="Total" value={total} />
-          <StatCard label="Novos" value={candidatos.filter(c => c.status === 'novo').length} color="blue" />
-          <StatCard label="Aprovados" value={candidatos.filter(c => c.status === 'aprovado').length} color="green" />
-          <StatCard label="Contratados" value={candidatos.filter(c => c.status === 'contratado').length} color="purple" />
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          <StatCard label="Total" value={counts.total_geral} />
+          <StatCard label="Novos" value={counts.novo} color="blue" />
+          <StatCard label="Em Análise" value={counts.em_analise} color="yellow" />
+          <StatCard label="Aprovados" value={counts.aprovado} color="green" />
+          <StatCard label="Contratados" value={counts.contratado} color="purple" />
         </div>
 
         {/* Configurações do Evento */}
@@ -285,6 +299,7 @@ export default function AdminDashboard() {
                   <th className="text-left px-4 py-3 text-gray-400 font-medium">Nome</th>
                   <th className="text-left px-4 py-3 text-gray-400 font-medium hidden md:table-cell">CPF</th>
                   <th className="text-left px-4 py-3 text-gray-400 font-medium hidden lg:table-cell">Cargo</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium hidden sm:table-cell">Arquivos</th>
                   <th className="text-left px-4 py-3 text-gray-400 font-medium">Status</th>
                   {presencaDia !== null && (
                     <th className="text-left px-4 py-3 font-medium">
@@ -312,6 +327,26 @@ export default function AdminDashboard() {
                         <td className="px-4 py-3 text-mega-text font-medium">{c.nome_completo}</td>
                         <td className="px-4 py-3 text-mega-text-secondary hidden md:table-cell">{c.cpf}</td>
                         <td className="px-4 py-3 text-mega-text-secondary hidden lg:table-cell">{c.cargo_pretendido || '—'}</td>
+                        <td className="px-4 py-3 hidden sm:table-cell">
+                          <div className="flex items-center gap-1.5">
+                            {c.documento_foto_nome ? (
+                              <span title={`Documento: ${c.documento_foto_nome}`}
+                                className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-600 border border-blue-200">
+                                Doc
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-50 text-gray-400 border border-gray-200">Doc</span>
+                            )}
+                            {c.curriculo_nome ? (
+                              <span title={`Currículo: ${c.curriculo_nome}`}
+                                className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-600 border border-green-200">
+                                CV
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-50 text-gray-400 border border-gray-200">CV</span>
+                            )}
+                          </div>
+                        </td>
                         <td className="px-4 py-3"><StatusBadge status={c.status} /></td>
 
                         {/* Coluna de presença (visível quando um dia está selecionado) */}
@@ -422,7 +457,7 @@ function PresencaToggle({
 
 // ─── StatCard ─────────────────────────────────────────────────────────────────
 function StatCard({ label, value, color }: { label: string; value: number; color?: string }) {
-  const colorMap: Record<string, string> = { blue: 'text-blue-400', green: 'text-green-400', purple: 'text-purple-400' }
+  const colorMap: Record<string, string> = { blue: 'text-blue-400', green: 'text-green-400', purple: 'text-purple-400', yellow: 'text-amber-400' }
   return (
     <div className="bg-white border border-mega-border rounded-lg p-4 shadow-sm">
       <p className="text-xs text-mega-text-muted uppercase">{label}</p>

@@ -50,6 +50,10 @@ const defaultFormData: FormData = {
   documento_foto: '',
   documento_foto_nome: '',
   documento_foto_tipo: '',
+  curriculo: '',
+  curriculo_nome: '',
+  curriculo_tipo: '',
+  experiencia_profissional: '',
 }
 
 export default function FormWizard() {

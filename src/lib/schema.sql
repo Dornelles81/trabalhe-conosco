@@ -52,6 +52,12 @@ CREATE TABLE IF NOT EXISTS candidatos (
   documento_foto_nome VARCHAR(255),
   documento_foto_tipo VARCHAR(50),
 
+  -- Currículo
+  curriculo TEXT,
+  curriculo_nome VARCHAR(255),
+  curriculo_tipo VARCHAR(100),
+  experiencia_profissional TEXT,
+
   -- Metadata
   status VARCHAR(20) NOT NULL DEFAULT 'novo',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),

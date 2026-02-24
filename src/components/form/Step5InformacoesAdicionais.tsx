@@ -19,7 +19,9 @@ interface Props {
 
 export default function Step5InformacoesAdicionais({ data, updateData, onNext, onPrev }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const curriculoInputRef = useRef<HTMLInputElement>(null)
   const [fileError, setFileError] = useState('')
+  const [curriculoError, setCurriculoError] = useState('')
 
   const {
     register,
@@ -38,11 +40,16 @@ export default function Step5InformacoesAdicionais({ data, updateData, onNext, o
       documento_foto: data.documento_foto,
       documento_foto_nome: data.documento_foto_nome,
       documento_foto_tipo: data.documento_foto_tipo,
+      curriculo: data.curriculo,
+      curriculo_nome: data.curriculo_nome,
+      curriculo_tipo: data.curriculo_tipo,
+      experiencia_profissional: data.experiencia_profissional,
     },
   })
 
   const experienciaEventos = watch('experiencia_eventos')
   const documentoFotoNome = watch('documento_foto_nome')
+  const curriculoNome = watch('curriculo_nome')
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -77,6 +84,45 @@ export default function Step5InformacoesAdicionais({ data, updateData, onNext, o
     setValue('documento_foto_nome', '')
     setValue('documento_foto_tipo', '')
     if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const handleCurriculoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    setCurriculoError('')
+    if (!file) return
+
+    if (file.size > 5 * 1024 * 1024) {
+      setCurriculoError('O arquivo deve ter no máximo 5MB')
+      e.target.value = ''
+      return
+    }
+
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ]
+    if (!allowedTypes.includes(file.type)) {
+      setCurriculoError('Formato inválido. Use PDF, DOC ou DOCX')
+      e.target.value = ''
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      const base64 = reader.result as string
+      setValue('curriculo', base64)
+      setValue('curriculo_nome', file.name)
+      setValue('curriculo_tipo', file.type)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const removeCurriculo = () => {
+    setValue('curriculo', '')
+    setValue('curriculo_nome', '')
+    setValue('curriculo_tipo', '')
+    if (curriculoInputRef.current) curriculoInputRef.current.value = ''
   }
 
   const onSubmit = (values: Step5Data) => {
@@ -187,6 +233,63 @@ export default function Step5InformacoesAdicionais({ data, updateData, onNext, o
           <p className="text-red-500 text-xs">{fileError || errors.documento_foto?.message}</p>
         )}
       </div>
+
+      {/* Upload de currículo */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-mega-text">
+          Currículo <span className="text-mega-text-muted text-xs font-normal">(opcional)</span>
+        </label>
+        <p className="text-xs text-mega-text-muted">
+          Anexe seu currículo em PDF, DOC ou DOCX (máx. 5MB).
+        </p>
+
+        {curriculoNome ? (
+          <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <svg className="w-5 h-5 text-green-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-sm text-green-700 truncate flex-1">{curriculoNome}</span>
+            <button
+              type="button"
+              onClick={removeCurriculo}
+              className="text-red-500 hover:text-red-700 text-sm font-medium shrink-0"
+            >
+              Remover
+            </button>
+          </div>
+        ) : (
+          <div
+            onClick={() => curriculoInputRef.current?.click()}
+            className="border-2 border-dashed border-mega-border hover:border-mega-teal rounded-lg p-6 text-center cursor-pointer transition-colors"
+          >
+            <svg className="w-8 h-8 mx-auto text-mega-text-muted mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <p className="text-sm text-mega-text-secondary">Clique para selecionar o arquivo</p>
+            <p className="text-xs text-mega-text-muted mt-1">PDF, DOC ou DOCX</p>
+          </div>
+        )}
+
+        <input
+          ref={curriculoInputRef}
+          type="file"
+          accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          onChange={handleCurriculoChange}
+          className="hidden"
+        />
+        {curriculoError && (
+          <p className="text-red-500 text-xs">{curriculoError}</p>
+        )}
+      </div>
+
+      {/* Experiência profissional */}
+      <Textarea
+        label="Experiência Profissional"
+        {...register('experiencia_profissional')}
+        error={errors.experiencia_profissional?.message}
+        placeholder="Descreva seus empregos anteriores, cargos ocupados, tempo de atuação e principais atividades realizadas."
+        rows={5}
+      />
 
       <div className="flex justify-between pt-4">
         <Button type="button" variant="secondary" onClick={onPrev}>Anterior</Button>

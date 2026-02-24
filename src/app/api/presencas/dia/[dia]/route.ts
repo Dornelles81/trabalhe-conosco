@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { neon } from '@neondatabase/serverless'
+import { getDb } from '@/lib/db'
 
 // GET /api/presencas/dia/[dia]
 // Retorna todos os candidatos contratados com status de presença no dia especificado
@@ -14,7 +14,7 @@ export async function GET(
   }
 
   try {
-    const sql = neon(process.env.DATABASE_URL!)
+    const sql = getDb()
     const rows = await sql`
       SELECT
         c.id         AS candidato_id,

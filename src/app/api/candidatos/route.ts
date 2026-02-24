@@ -18,7 +18,9 @@ export async function POST(request: NextRequest) {
         possui_dependentes,
         escolaridade, curso, experiencia_eventos, experiencia_descricao,
         cargo_pretendido, disponibilidade, como_soube, observacoes,
-        documento_foto, documento_foto_nome, documento_foto_tipo
+        documento_foto, documento_foto_nome, documento_foto_tipo,
+        curriculo, curriculo_nome, curriculo_tipo,
+        experiencia_profissional
       ) VALUES (
         ${body.nome_completo}, ${body.data_nascimento || null}, ${body.sexo},
         ${body.estado_civil}, ${body.nacionalidade},
@@ -37,7 +39,10 @@ export async function POST(request: NextRequest) {
         ${body.cargo_pretendido || null}, ${body.disponibilidade || null},
         ${body.como_soube || null}, ${body.observacoes || null},
         ${body.documento_foto || null}, ${body.documento_foto_nome || null},
-        ${body.documento_foto_tipo || null}
+        ${body.documento_foto_tipo || null},
+        ${body.curriculo || null}, ${body.curriculo_nome || null},
+        ${body.curriculo_tipo || null},
+        ${body.experiencia_profissional || null}
       )
       RETURNING id
     `
@@ -90,53 +95,35 @@ export async function GET(request: NextRequest) {
 
     if (status && search) {
       candidatos = await sql`
-        SELECT id, nome_completo, data_nascimento, sexo, estado_civil, nacionalidade, etnia,
-        possui_deficiencia, tipo_deficiencia, naturalidade, nome_pai, nome_mae,
-        cep, endereco, numero, complemento, bairro, cidade, estado, telefone, celular, email,
-        cpf, rg, orgao_emissor, data_emissao_rg, ctps, serie_ctps, pis,
-        possui_dependentes,
-        escolaridade, curso, experiencia_eventos, experiencia_descricao,
-        cargo_pretendido, disponibilidade, como_soube, observacoes,
-        documento_foto_nome, documento_foto_tipo,
-        status, created_at, updated_at
-      FROM candidatos
+        SELECT id, nome_completo, cpf, celular, cargo_pretendido,
+          documento_foto_nome, documento_foto_tipo, curriculo_nome, curriculo_tipo,
+          status, created_at
+        FROM candidatos
         WHERE status = ${status}
-        AND (nome_completo ILIKE ${'%' + search + '%'} OR cpf LIKE ${'%' + search + '%'})
-        ORDER BY created_at DESC
-        LIMIT ${limit} OFFSET ${offset}
+          AND (nome_completo ILIKE ${'%' + search + '%'} OR cpf LIKE ${'%' + search + '%'})
+        ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}
       `
       countResult = await sql`
         SELECT COUNT(*) as total FROM candidatos
         WHERE status = ${status}
-        AND (nome_completo ILIKE ${'%' + search + '%'} OR cpf LIKE ${'%' + search + '%'})
+          AND (nome_completo ILIKE ${'%' + search + '%'} OR cpf LIKE ${'%' + search + '%'})
       `
     } else if (status) {
       candidatos = await sql`
-        SELECT id, nome_completo, data_nascimento, sexo, estado_civil, nacionalidade, etnia,
-        possui_deficiencia, tipo_deficiencia, naturalidade, nome_pai, nome_mae,
-        cep, endereco, numero, complemento, bairro, cidade, estado, telefone, celular, email,
-        cpf, rg, orgao_emissor, data_emissao_rg, ctps, serie_ctps, pis,
-        possui_dependentes,
-        escolaridade, curso, experiencia_eventos, experiencia_descricao,
-        cargo_pretendido, disponibilidade, como_soube, observacoes,
-        documento_foto_nome, documento_foto_tipo,
-        status, created_at, updated_at
-      FROM candidatos WHERE status = ${status}
+        SELECT id, nome_completo, cpf, celular, cargo_pretendido,
+          documento_foto_nome, documento_foto_tipo, curriculo_nome, curriculo_tipo,
+          status, created_at
+        FROM candidatos
+        WHERE status = ${status}
         ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}
       `
       countResult = await sql`SELECT COUNT(*) as total FROM candidatos WHERE status = ${status}`
     } else if (search) {
       candidatos = await sql`
-        SELECT id, nome_completo, data_nascimento, sexo, estado_civil, nacionalidade, etnia,
-        possui_deficiencia, tipo_deficiencia, naturalidade, nome_pai, nome_mae,
-        cep, endereco, numero, complemento, bairro, cidade, estado, telefone, celular, email,
-        cpf, rg, orgao_emissor, data_emissao_rg, ctps, serie_ctps, pis,
-        possui_dependentes,
-        escolaridade, curso, experiencia_eventos, experiencia_descricao,
-        cargo_pretendido, disponibilidade, como_soube, observacoes,
-        documento_foto_nome, documento_foto_tipo,
-        status, created_at, updated_at
-      FROM candidatos
+        SELECT id, nome_completo, cpf, celular, cargo_pretendido,
+          documento_foto_nome, documento_foto_tipo, curriculo_nome, curriculo_tipo,
+          status, created_at
+        FROM candidatos
         WHERE nome_completo ILIKE ${'%' + search + '%'} OR cpf LIKE ${'%' + search + '%'}
         ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}
       `
@@ -146,25 +133,40 @@ export async function GET(request: NextRequest) {
       `
     } else {
       candidatos = await sql`
-        SELECT id, nome_completo, data_nascimento, sexo, estado_civil, nacionalidade, etnia,
-        possui_deficiencia, tipo_deficiencia, naturalidade, nome_pai, nome_mae,
-        cep, endereco, numero, complemento, bairro, cidade, estado, telefone, celular, email,
-        cpf, rg, orgao_emissor, data_emissao_rg, ctps, serie_ctps, pis,
-        possui_dependentes,
-        escolaridade, curso, experiencia_eventos, experiencia_descricao,
-        cargo_pretendido, disponibilidade, como_soube, observacoes,
-        documento_foto_nome, documento_foto_tipo,
-        status, created_at, updated_at
-      FROM candidatos ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}
+        SELECT id, nome_completo, cpf, celular, cargo_pretendido,
+          documento_foto_nome, documento_foto_tipo, curriculo_nome, curriculo_tipo,
+          status, created_at
+        FROM candidatos
+        ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}
       `
       countResult = await sql`SELECT COUNT(*) as total FROM candidatos`
     }
+
+    // Counts globais por status (independente do filtro atual)
+    const [statusCounts] = await sql`
+      SELECT
+        COUNT(*) FILTER (WHERE status = 'novo')       AS novo,
+        COUNT(*) FILTER (WHERE status = 'em_analise') AS em_analise,
+        COUNT(*) FILTER (WHERE status = 'aprovado')   AS aprovado,
+        COUNT(*) FILTER (WHERE status = 'reprovado')  AS reprovado,
+        COUNT(*) FILTER (WHERE status = 'contratado') AS contratado,
+        COUNT(*)                                      AS total_geral
+      FROM candidatos
+    `
 
     return NextResponse.json({
       candidatos,
       total: parseInt(countResult[0].total),
       page,
       totalPages: Math.ceil(parseInt(countResult[0].total) / limit),
+      counts: {
+        novo:        parseInt(statusCounts.novo),
+        em_analise:  parseInt(statusCounts.em_analise),
+        aprovado:    parseInt(statusCounts.aprovado),
+        reprovado:   parseInt(statusCounts.reprovado),
+        contratado:  parseInt(statusCounts.contratado),
+        total_geral: parseInt(statusCounts.total_geral),
+      },
     })
   } catch (error) {
     console.error('Erro ao buscar candidatos:', error)

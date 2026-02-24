@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { neon } from '@neondatabase/serverless'
+import { getDb } from '@/lib/db'
 
 const PERIODOS_VALIDOS = ['Dia Inteiro', 'Manhã', 'Tarde', 'Noite']
 
@@ -14,7 +14,7 @@ export async function GET(
   }
 
   try {
-    const sql = neon(process.env.DATABASE_URL!)
+    const sql = getDb()
     const rows = await sql`
       SELECT id, candidato_id, dia_numero, periodo, observacao, created_at
       FROM presencas
@@ -51,7 +51,7 @@ export async function POST(
   }
 
   try {
-    const sql = neon(process.env.DATABASE_URL!)
+    const sql = getDb()
     // UPSERT: se já existe registro para (candidato, dia), atualiza o periodo
     const [row] = await sql`
       INSERT INTO presencas (candidato_id, dia_numero, periodo, observacao)

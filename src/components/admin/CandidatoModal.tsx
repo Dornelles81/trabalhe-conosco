@@ -45,6 +45,10 @@ interface Candidato {
   documento_foto: string
   documento_foto_nome: string
   documento_foto_tipo: string
+  curriculo: string
+  curriculo_nome: string
+  curriculo_tipo: string
+  experiencia_profissional: string
   status: string
   created_at: string
   premiacao_override: number | null
@@ -350,9 +354,16 @@ export default function CandidatoModal({ candidatoId, onClose, onStatusChange }:
                   <Field label="Cargo" value={candidato.cargo_pretendido} />
                   <Field label="Disponibilidade" value={candidato.disponibilidade} />
                   <Field label="Exp. Eventos" value={candidato.experiencia_eventos ? 'Sim' : 'Não'} />
-                  {candidato.experiencia_descricao && <Field label="Descrição" value={candidato.experiencia_descricao} />}
                   <Field label="Como soube" value={candidato.como_soube} />
-                  {candidato.observacoes && <Field label="Observações" value={candidato.observacoes} />}
+                  {candidato.experiencia_descricao && (
+                    <LongField label="Exp. em Eventos (Detalhe)" value={candidato.experiencia_descricao} />
+                  )}
+                  {candidato.experiencia_profissional && (
+                    <LongField label="Experiência Profissional" value={candidato.experiencia_profissional} />
+                  )}
+                  {candidato.observacoes && (
+                    <LongField label="Observações" value={candidato.observacoes} />
+                  )}
                 </Section>
 
                 {candidato.documento_foto && (
@@ -374,6 +385,23 @@ export default function CandidatoModal({ candidatoId, onClose, onStatusChange }:
                           Baixar PDF
                         </a>
                       )}
+                    </div>
+                  </Section>
+                )}
+
+                {candidato.curriculo && (
+                  <Section title="Currículo">
+                    <div className="sm:col-span-2">
+                      <a
+                        href={candidato.curriculo}
+                        download={candidato.curriculo_nome}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-mega-navy hover:bg-mega-navy/90 text-white rounded-lg text-sm font-medium transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        {candidato.curriculo_nome || 'Baixar Currículo'}
+                      </a>
                     </div>
                   </Section>
                 )}
@@ -663,6 +691,16 @@ function Field({ label, value }: { label: string; value: string | undefined | nu
     <div>
       <span className="text-mega-text-muted">{label}: </span>
       <span className="text-mega-text">{value || '—'}</span>
+    </div>
+  )
+}
+
+function LongField({ label, value }: { label: string; value: string | undefined | null }) {
+  if (!value) return null
+  return (
+    <div className="sm:col-span-2">
+      <p className="text-mega-text-muted text-xs mb-1">{label}:</p>
+      <p className="text-mega-text text-sm whitespace-pre-wrap bg-mega-bg border border-mega-border rounded-lg px-3 py-2">{value}</p>
     </div>
   )
 }

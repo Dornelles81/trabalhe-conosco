@@ -111,6 +111,10 @@ export default function Step6Revisao({ data, onPrev, onSubmit, onReset, isSubmit
         )}
         <Field label="Como soube" value={data.como_soube} />
         <Field label="Documento (CNH/RG)" value={data.documento_foto_nome || '—'} />
+        <Field label="Currículo" value={data.curriculo_nome || '—'} />
+        {data.experiencia_profissional && (
+          <Field label="Experiência Profissional" value={data.experiencia_profissional} />
+        )}
       </Section>
 
       <div className="flex justify-between pt-4">

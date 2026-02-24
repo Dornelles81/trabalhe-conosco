@@ -54,6 +54,10 @@ export const step5Schema = z.object({
   documento_foto: z.string().min(1, 'Anexe uma foto do documento (CNH ou RG)'),
   documento_foto_nome: z.string().optional(),
   documento_foto_tipo: z.string().optional(),
+  curriculo: z.string().optional(),
+  curriculo_nome: z.string().optional(),
+  curriculo_tipo: z.string().optional(),
+  experiencia_profissional: z.string().optional(),
 })
 
 export type Step1Data = z.infer<typeof step1Schema>
