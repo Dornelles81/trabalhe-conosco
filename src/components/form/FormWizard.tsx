@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ProgressBar from '@/components/ui/ProgressBar'
 import Button from '@/components/ui/Button'
@@ -11,7 +11,6 @@ import Step5InformacoesAdicionais from './Step5InformacoesAdicionais'
 import Step6Revisao from './Step6Revisao'
 import type { FormData } from '@/lib/validations'
 
-const STORAGE_KEY = 'mega-feira-form'
 const STEP_LABELS = ['Pessoais', 'Endereço', 'Documentos', 'Adicionais', 'Revisão']
 
 const defaultFormData: FormData = {
@@ -60,25 +59,6 @@ export default function FormWizard() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
 
-  // Load from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved)
-        setFormData({ ...defaultFormData, ...parsed.data })
-        if (parsed.step) setCurrentStep(parsed.step)
-      } catch {}
-    }
-  }, [])
-
-  // Save to localStorage (exclude large base64 photo)
-  useEffect(() => {
-    const { documento_foto, ...dataToSave } = formData
-    void documento_foto
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ data: dataToSave, step: currentStep }))
-  }, [formData, currentStep])
-
   const updateData = (stepData: Partial<FormData>) => {
     setFormData(prev => ({ ...prev, ...stepData }))
   }
@@ -95,7 +75,6 @@ export default function FormWizard() {
 
   const handleReset = () => {
     if (!confirm('Tem certeza que deseja limpar todos os dados e começar do zero?')) return
-    localStorage.removeItem(STORAGE_KEY)
     setFormData(defaultFormData)
     setCurrentStep(1)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -117,7 +96,6 @@ export default function FormWizard() {
         throw new Error(err.error || 'Erro ao enviar cadastro')
       }
 
-      localStorage.removeItem(STORAGE_KEY)
       router.push('/trabalhe-conosco/confirmacao')
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Erro ao enviar cadastro')
