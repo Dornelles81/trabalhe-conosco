@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function LGPDConsentButton() {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(true)
   const router = useRouter()
 
   const handleAccept = () => {
