@@ -33,9 +33,12 @@ export async function PATCH(
     const sql = getDb()
 
     if (body.status) {
-      await sql`
-        UPDATE candidatos SET status = ${body.status}, updated_at = NOW() WHERE id = ${id}
-      `
+      await sql`UPDATE candidatos SET status = ${body.status}, updated_at = NOW() WHERE id = ${id}`
+    }
+
+    if ('premiacao_override' in body) {
+      const val = body.premiacao_override === null ? null : parseFloat(body.premiacao_override)
+      await sql`UPDATE candidatos SET premiacao_override = ${val}, updated_at = NOW() WHERE id = ${id}`
     }
 
     return NextResponse.json({ message: 'Candidato atualizado' })

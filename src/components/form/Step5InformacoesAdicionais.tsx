@@ -34,10 +34,7 @@ export default function Step5InformacoesAdicionais({ data, updateData, onNext, o
       curso: data.curso,
       experiencia_eventos: data.experiencia_eventos,
       experiencia_descricao: data.experiencia_descricao,
-      cargo_pretendido: data.cargo_pretendido,
-      disponibilidade: data.disponibilidade,
       como_soube: data.como_soube,
-      observacoes: data.observacoes,
       documento_foto: data.documento_foto,
       documento_foto_nome: data.documento_foto_nome,
       documento_foto_tipo: data.documento_foto_tipo,
@@ -94,6 +91,7 @@ export default function Step5InformacoesAdicionais({ data, updateData, onNext, o
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Select
           label="Escolaridade"
+          required
           {...register('escolaridade')}
           error={errors.escolaridade?.message}
           options={[
@@ -113,32 +111,6 @@ export default function Step5InformacoesAdicionais({ data, updateData, onNext, o
           placeholder="Curso em andamento ou concluído"
         />
       </div>
-
-      <Select
-        label="Cargo Pretendido"
-        {...register('cargo_pretendido')}
-        error={errors.cargo_pretendido?.message}
-        options={[
-          { value: 'Caixa', label: 'Caixa' },
-          { value: 'Orientador', label: 'Orientador' },
-          { value: 'Garçom', label: 'Garçom' },
-          { value: 'Auxiliar Administrativo', label: 'Auxiliar Administrativo' },
-        ]}
-      />
-
-      <Select
-        label="Disponibilidade"
-        {...register('disponibilidade')}
-        error={errors.disponibilidade?.message}
-        options={[
-          { value: 'Integral', label: 'Integral' },
-          { value: 'Manhã', label: 'Manhã' },
-          { value: 'Tarde', label: 'Tarde' },
-          { value: 'Noite', label: 'Noite' },
-          { value: 'Fins de Semana', label: 'Fins de Semana' },
-          { value: 'Flexível', label: 'Flexível' },
-        ]}
-      />
 
       <Checkbox
         label="Possui experiência em eventos?"
@@ -165,13 +137,6 @@ export default function Step5InformacoesAdicionais({ data, updateData, onNext, o
           { value: 'Site', label: 'Site' },
           { value: 'Outro', label: 'Outro' },
         ]}
-      />
-
-      <Textarea
-        label="Observações"
-        {...register('observacoes')}
-        error={errors.observacoes?.message}
-        placeholder="Informações adicionais que julgar relevantes"
       />
 
       {/* Upload de documento */}

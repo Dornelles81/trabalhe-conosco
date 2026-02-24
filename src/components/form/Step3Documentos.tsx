@@ -29,8 +29,6 @@ export default function Step3Documentos({ data, updateData, onNext, onPrev }: Pr
       rg: data.rg,
       orgao_emissor: data.orgao_emissor,
       data_emissao_rg: data.data_emissao_rg,
-      ctps: data.ctps,
-      serie_ctps: data.serie_ctps,
       pis: data.pis,
     },
   })
@@ -83,21 +81,9 @@ export default function Step3Documentos({ data, updateData, onNext, onPrev }: Pr
         />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Input
-          label="CTPS (Carteira de Trabalho)"
-          {...register('ctps')}
-          error={errors.ctps?.message}
-        />
-        <Input
-          label="Série CTPS"
-          {...register('serie_ctps')}
-          error={errors.serie_ctps?.message}
-        />
-      </div>
-
       <MaskedInput
         label="PIS/PASEP"
+        required
         maskFn={maskPIS}
         {...register('pis')}
         error={errors.pis?.message}

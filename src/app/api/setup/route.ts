@@ -69,9 +69,52 @@ export async function POST() {
       )
     `
 
+    await sql`ALTER TABLE candidatos ADD COLUMN IF NOT EXISTS premiacao_override NUMERIC(10,2) DEFAULT NULL`
     await sql`CREATE INDEX IF NOT EXISTS idx_candidatos_status ON candidatos(status)`
     await sql`CREATE INDEX IF NOT EXISTS idx_candidatos_created_at ON candidatos(created_at DESC)`
     await sql`CREATE INDEX IF NOT EXISTS idx_dependentes_candidato_id ON dependentes(candidato_id)`
+
+    // Se a tabela presencas existir com schema antigo (coluna data), recria com novo schema
+    await sql`
+      DO $$ BEGIN
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'presencas' AND column_name = 'data'
+        ) THEN
+          DROP TABLE presencas CASCADE;
+        END IF;
+      END $$;
+    `
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS presencas (
+        id SERIAL PRIMARY KEY,
+        candidato_id INTEGER NOT NULL REFERENCES candidatos(id) ON DELETE CASCADE,
+        dia_numero INTEGER NOT NULL,
+        periodo VARCHAR(20) NOT NULL DEFAULT 'Dia Inteiro',
+        observacao TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE(candidato_id, dia_numero)
+      )
+    `
+    await sql`ALTER TABLE presencas ADD COLUMN IF NOT EXISTS periodo VARCHAR(20) NOT NULL DEFAULT 'Dia Inteiro'`
+    await sql`CREATE INDEX IF NOT EXISTS idx_presencas_candidato_id ON presencas(candidato_id)`
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS evento_config (
+        id INTEGER PRIMARY KEY DEFAULT 1,
+        dias_total INTEGER NOT NULL DEFAULT 6,
+        valor_diaria NUMERIC(10,2) NOT NULL DEFAULT 180.00,
+        premiacao NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `
+    await sql`ALTER TABLE evento_config ADD COLUMN IF NOT EXISTS premiacao NUMERIC(10,2) NOT NULL DEFAULT 0.00`
+    await sql`
+      INSERT INTO evento_config (id, dias_total, valor_diaria, premiacao)
+      VALUES (1, 6, 180.00, 0.00)
+      ON CONFLICT (id) DO NOTHING
+    `
 
     return NextResponse.json({ message: 'Schema criado com sucesso' })
   } catch (error) {

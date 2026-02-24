@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import LGPDConsentButton from '@/components/LGPDConsentButton'
 
 export default function Home() {
   return (
@@ -15,12 +15,7 @@ export default function Home() {
             Estamos sempre em busca de profissionais dedicados para fazer parte dos nossos eventos.
             Preencha seu cadastro e venha trabalhar conosco!
           </p>
-          <Link
-            href="/trabalhe-conosco"
-            className="inline-block bg-mega-teal hover:bg-mega-teal-hover text-white font-semibold px-10 py-4 rounded-full text-lg transition-colors shadow-md hover:shadow-lg"
-          >
-            Cadastre-se Agora
-          </Link>
+          <LGPDConsentButton />
         </div>
       </main>
       <Footer />

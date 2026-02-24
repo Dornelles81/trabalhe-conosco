@@ -7,13 +7,12 @@ import Button from '@/components/ui/Button'
 import Step1DadosPessoais from './Step1DadosPessoais'
 import Step2EnderecoContato from './Step2EnderecoContato'
 import Step3Documentos from './Step3Documentos'
-import Step4Familia from './Step4Familia'
 import Step5InformacoesAdicionais from './Step5InformacoesAdicionais'
 import Step6Revisao from './Step6Revisao'
 import type { FormData } from '@/lib/validations'
 
 const STORAGE_KEY = 'mega-feira-form'
-const STEP_LABELS = ['Pessoais', 'Endereço', 'Documentos', 'Família', 'Adicionais', 'Revisão']
+const STEP_LABELS = ['Pessoais', 'Endereço', 'Documentos', 'Adicionais', 'Revisão']
 
 const defaultFormData: FormData = {
   nome_completo: '',
@@ -41,19 +40,12 @@ const defaultFormData: FormData = {
   rg: '',
   orgao_emissor: '',
   data_emissao_rg: '',
-  ctps: '',
-  serie_ctps: '',
   pis: '',
-  possui_dependentes: false,
-  dependentes: [],
   escolaridade: '',
   curso: '',
   experiencia_eventos: false,
   experiencia_descricao: '',
-  cargo_pretendido: '',
-  disponibilidade: '',
   como_soube: '',
-  observacoes: '',
   documento_foto: '',
   documento_foto_nome: '',
   documento_foto_tipo: '',
@@ -90,7 +82,7 @@ export default function FormWizard() {
   }
 
   const nextStep = () => {
-    setCurrentStep(prev => Math.min(prev + 1, 6))
+    setCurrentStep(prev => Math.min(prev + 1, 5))
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -130,9 +122,8 @@ export default function FormWizard() {
       case 1: return <Step1DadosPessoais {...common} onNext={nextStep} />
       case 2: return <Step2EnderecoContato {...common} onNext={nextStep} onPrev={prevStep} />
       case 3: return <Step3Documentos {...common} onNext={nextStep} onPrev={prevStep} />
-      case 4: return <Step4Familia {...common} onNext={nextStep} onPrev={prevStep} />
-      case 5: return <Step5InformacoesAdicionais {...common} onNext={nextStep} onPrev={prevStep} />
-      case 6:
+      case 4: return <Step5InformacoesAdicionais {...common} onNext={nextStep} onPrev={prevStep} />
+      case 5:
         return (
           <Step6Revisao
             data={formData}
@@ -149,7 +140,7 @@ export default function FormWizard() {
   return (
     <div className="w-full max-w-3xl mx-auto">
       <div className="mb-8">
-        <ProgressBar currentStep={currentStep} totalSteps={6} labels={STEP_LABELS} />
+        <ProgressBar currentStep={currentStep} totalSteps={5} labels={STEP_LABELS} />
       </div>
       <div className="bg-white border border-mega-border rounded-xl p-6 md:p-8 shadow-sm">
         {submitError && (

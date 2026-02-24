@@ -98,31 +98,17 @@ export default function Step6Revisao({ data, onPrev, onSubmit, isSubmitting, goT
         <Field label="RG" value={data.rg} />
         <Field label="Órgão Emissor" value={data.orgao_emissor} />
         <Field label="Data Emissão RG" value={formatDate(data.data_emissao_rg)} />
-        <Field label="CTPS" value={data.ctps} />
-        <Field label="Série CTPS" value={data.serie_ctps} />
         <Field label="PIS/PASEP" value={data.pis} />
       </Section>
 
-      <Section title="Família e Dependentes" step={4} goToStep={goToStep}>
-        <Field label="Possui Dependentes" value={data.possui_dependentes} />
-        {data.dependentes?.map((dep, i) => (
-          <div key={i} className="sm:col-span-2 border-t border-mega-border/50 pt-1 mt-1">
-            <Field label={`Dependente ${i + 1}`} value={`${dep.nome} - ${dep.parentesco}`} />
-          </div>
-        ))}
-      </Section>
-
-      <Section title="Informações Adicionais" step={5} goToStep={goToStep}>
+      <Section title="Informações Adicionais" step={4} goToStep={goToStep}>
         <Field label="Escolaridade" value={data.escolaridade} />
         <Field label="Curso" value={data.curso} />
-        <Field label="Cargo Pretendido" value={data.cargo_pretendido} />
-        <Field label="Disponibilidade" value={data.disponibilidade} />
         <Field label="Experiência em Eventos" value={data.experiencia_eventos} />
         {data.experiencia_eventos && (
           <Field label="Descrição" value={data.experiencia_descricao} />
         )}
         <Field label="Como soube" value={data.como_soube} />
-        {data.observacoes && <Field label="Observações" value={data.observacoes} />}
         <Field label="Documento (CNH/RG)" value={data.documento_foto_nome || '—'} />
       </Section>
 
