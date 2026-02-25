@@ -37,14 +37,20 @@ export default function Step1DadosPessoais({ data, updateData, onNext, onReset }
       naturalidade: data.naturalidade,
       nome_pai: data.nome_pai,
       nome_mae: data.nome_mae,
+      pix_nao_possui: data.pix_nao_possui,
+      chave_pix: data.chave_pix,
     },
   })
 
   const possuiDeficiencia = watch('possui_deficiencia')
+  const pixNaoPossui = watch('pix_nao_possui')
 
   const onSubmit = (values: Step1Data) => {
     if (!values.possui_deficiencia) {
       values.tipo_deficiencia = ''
+    }
+    if (values.pix_nao_possui) {
+      values.chave_pix = ''
     }
     updateData(values)
     onNext()
@@ -166,6 +172,34 @@ export default function Step1DadosPessoais({ data, updateData, onNext, onReset }
         {...register('nome_mae')}
         error={errors.nome_mae?.message}
       />
+
+      <div className="border border-mega-border rounded-lg p-4 bg-mega-bg">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs font-semibold text-mega-teal">Dados para Pagamento</p>
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              {...register('pix_nao_possui')}
+              className="w-4 h-4 rounded border-mega-border text-mega-teal accent-mega-teal"
+            />
+            <span className="text-xs text-mega-text-secondary">Não possui</span>
+          </label>
+        </div>
+        {!pixNaoPossui ? (
+          <>
+            <Input
+              label="Chave PIX"
+              required
+              {...register('chave_pix')}
+              error={errors.chave_pix?.message}
+              placeholder="CPF, e-mail, telefone ou chave aleatória"
+            />
+            <p className="text-xs text-mega-text-muted mt-1">A chave PIX deve estar no nome do candidato.</p>
+          </>
+        ) : (
+          <p className="text-sm text-mega-text-muted italic">Candidato informou que não possui chave PIX.</p>
+        )}
+      </div>
 
       <div className="flex justify-between pt-4">
         {onReset && (

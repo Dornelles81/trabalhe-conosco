@@ -81,6 +81,7 @@ export default function Step6Revisao({ data, onPrev, onSubmit, onReset, isSubmit
         <Field label="Naturalidade" value={data.naturalidade} />
         <Field label="Nome do Pai" value={data.nome_pai} />
         <Field label="Nome da Mãe" value={data.nome_mae} />
+        <Field label="Chave PIX" value={data.pix_nao_possui ? 'Não possui' : data.chave_pix} />
       </Section>
 
       <Section title="Endereço e Contato" step={2} goToStep={goToStep}>
@@ -99,7 +100,6 @@ export default function Step6Revisao({ data, onPrev, onSubmit, onReset, isSubmit
         <Field label="RG" value={data.rg} />
         <Field label="Órgão Emissor" value={data.orgao_emissor} />
         <Field label="Data Emissão RG" value={formatDate(data.data_emissao_rg)} />
-        <Field label="PIS/PASEP" value={data.pis} />
       </Section>
 
       <Section title="Informações Adicionais" step={4} goToStep={goToStep}>
@@ -110,7 +110,8 @@ export default function Step6Revisao({ data, onPrev, onSubmit, onReset, isSubmit
           <Field label="Descrição" value={data.experiencia_descricao} />
         )}
         <Field label="Como soube" value={data.como_soube} />
-        <Field label="Documento (CNH/RG)" value={data.documento_foto_nome || '—'} />
+        <Field label="Doc. Frente (CNH/RG)" value={data.doc_frente_nome || '—'} />
+        <Field label="Doc. Verso" value={data.doc_verso_nome || '—'} />
         <Field label="Currículo" value={data.curriculo_nome || '—'} />
         {data.experiencia_profissional && (
           <Field label="Experiência Profissional" value={data.experiencia_profissional} />

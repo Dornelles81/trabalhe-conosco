@@ -7,7 +7,7 @@ import Input from '@/components/ui/Input'
 import DateInput from '@/components/ui/DateInput'
 import MaskedInput from '@/components/ui/MaskedInput'
 import Button from '@/components/ui/Button'
-import { maskCPF, maskPIS } from '@/lib/masks'
+import { maskCPF } from '@/lib/masks'
 
 interface Props {
   data: FormData
@@ -29,7 +29,6 @@ export default function Step3Documentos({ data, updateData, onNext, onPrev }: Pr
       rg: data.rg,
       orgao_emissor: data.orgao_emissor,
       data_emissao_rg: data.data_emissao_rg,
-      pis: data.pis,
     },
   })
 
@@ -80,15 +79,6 @@ export default function Step3Documentos({ data, updateData, onNext, onPrev }: Pr
           )}
         />
       </div>
-
-      <MaskedInput
-        label="PIS/PASEP"
-        required
-        maskFn={maskPIS}
-        {...register('pis')}
-        error={errors.pis?.message}
-        placeholder="000.00000.00-0"
-      />
 
       <div className="flex justify-between pt-4">
         <Button type="button" variant="secondary" onClick={onPrev}>Anterior</Button>

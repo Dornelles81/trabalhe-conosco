@@ -16,6 +16,8 @@ interface Candidato {
   naturalidade: string
   nome_pai: string
   nome_mae: string
+  chave_pix: string
+  pix_nao_possui: boolean
   cep: string
   endereco: string
   numero: string
@@ -45,6 +47,12 @@ interface Candidato {
   documento_foto: string
   documento_foto_nome: string
   documento_foto_tipo: string
+  doc_frente: string
+  doc_frente_nome: string
+  doc_frente_tipo: string
+  doc_verso: string
+  doc_verso_nome: string
+  doc_verso_tipo: string
   curriculo: string
   curriculo_nome: string
   curriculo_tipo: string
@@ -321,6 +329,7 @@ export default function CandidatoModal({ candidatoId, onClose, onStatusChange }:
                   <Field label="Naturalidade" value={candidato.naturalidade} />
                   <Field label="Pai" value={candidato.nome_pai} />
                   <Field label="Mãe" value={candidato.nome_mae} />
+                  <Field label="Chave PIX" value={candidato.pix_nao_possui ? 'Não possui' : candidato.chave_pix} />
                 </Section>
 
                 <Section title="Endereço e Contato">
@@ -337,7 +346,6 @@ export default function CandidatoModal({ candidatoId, onClose, onStatusChange }:
                   <Field label="CPF" value={candidato.cpf} />
                   <Field label="RG" value={`${candidato.rg}${candidato.orgao_emissor ? ' - ' + candidato.orgao_emissor : ''}`} />
                   <Field label="CTPS/Série" value={candidato.ctps ? `${candidato.ctps}/${candidato.serie_ctps}` : ''} />
-                  <Field label="PIS" value={candidato.pis} />
                 </Section>
 
                 {candidato.possui_dependentes && candidato.dependentes?.length > 0 && (
@@ -366,24 +374,28 @@ export default function CandidatoModal({ candidatoId, onClose, onStatusChange }:
                   )}
                 </Section>
 
-                {candidato.documento_foto && (
-                  <Section title="Documento (CNH/RG)">
-                    <div className="sm:col-span-2">
-                      <p className="text-mega-text-muted mb-2">Arquivo: {candidato.documento_foto_nome}</p>
-                      {candidato.documento_foto_tipo?.startsWith('image/') ? (
-                        <img
-                          src={candidato.documento_foto}
-                          alt="Documento"
-                          className="max-w-full max-h-96 rounded-lg border border-mega-border"
-                        />
-                      ) : (
-                        <a
-                          href={candidato.documento_foto}
-                          download={candidato.documento_foto_nome}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-mega-teal hover:bg-mega-teal-hover text-white rounded-lg text-sm font-medium transition-colors"
-                        >
-                          Baixar PDF
-                        </a>
+                {(candidato.doc_frente || candidato.doc_verso) && (
+                  <Section title="Documento de Identidade (CNH/RG)">
+                    <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {candidato.doc_frente && (
+                        <div>
+                          <p className="text-mega-text-muted text-xs mb-1">Frente: {candidato.doc_frente_nome}</p>
+                          <img
+                            src={candidato.doc_frente}
+                            alt="Frente do documento"
+                            className="max-w-full rounded-lg border border-mega-border"
+                          />
+                        </div>
+                      )}
+                      {candidato.doc_verso && (
+                        <div>
+                          <p className="text-mega-text-muted text-xs mb-1">Verso: {candidato.doc_verso_nome}</p>
+                          <img
+                            src={candidato.doc_verso}
+                            alt="Verso do documento"
+                            className="max-w-full rounded-lg border border-mega-border"
+                          />
+                        </div>
                       )}
                     </div>
                   </Section>

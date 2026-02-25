@@ -125,6 +125,7 @@ export async function GET(
                 row('Naturalidade', c.naturalidade || '—'),
                 row('Nome do Pai', c.nome_pai || '—'),
                 row('Nome da Mãe', c.nome_mae || '—'),
+                row('Chave PIX', c.pix_nao_possui ? 'Não possui' : (c.chave_pix || '—')),
               ],
             }),
 
@@ -157,7 +158,6 @@ export async function GET(
                 row4('CPF', c.cpf, 'RG', c.rg),
                 row4('Órgão Emissor', c.orgao_emissor || '—', 'Data Emissão', formatDate(c.data_emissao_rg)),
                 row4('CTPS', c.ctps || '—', 'Série', c.serie_ctps || '—'),
-                row('PIS/PASEP', c.pis || '—'),
               ],
             }),
 
@@ -211,7 +211,7 @@ export async function GET(
                 ...(c.experiencia_descricao ? [row('Exp. em Eventos (Detalhe)', c.experiencia_descricao)] : []),
                 ...(c.experiencia_profissional ? [row('Experiência Profissional', c.experiencia_profissional)] : []),
                 ...(c.observacoes ? [row('Observações', c.observacoes)] : []),
-                row('Documento (CNH/RG)', c.documento_foto_nome || 'Não anexado'),
+                row4('Doc. Frente (CNH/RG)', c.doc_frente_nome || 'Não anexado', 'Doc. Verso (CNH/RG)', c.doc_verso_nome || 'Não anexado'),
                 row('Currículo', c.curriculo_nome || 'Não anexado'),
               ],
             }),
