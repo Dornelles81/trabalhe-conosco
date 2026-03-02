@@ -12,16 +12,6 @@ export const step1Schema = z.object({
   naturalidade: z.string().optional(),
   nome_pai: z.string().optional(),
   nome_mae: z.string().optional(),
-  pix_nao_possui: z.boolean(),
-  chave_pix: z.string().optional(),
-}).superRefine((data, ctx) => {
-  if (!data.pix_nao_possui && (!data.chave_pix || data.chave_pix.trim() === '')) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Chave PIX é obrigatória',
-      path: ['chave_pix'],
-    })
-  }
 })
 
 export const step2Schema = z.object({
@@ -42,6 +32,16 @@ export const step3Schema = z.object({
   rg: z.string().min(5, 'RG é obrigatório'),
   orgao_emissor: z.string().optional(),
   data_emissao_rg: z.string().optional(),
+  pix_nao_possui: z.boolean(),
+  chave_pix: z.string().optional(),
+}).superRefine((data, ctx) => {
+  if (!data.pix_nao_possui && (!data.chave_pix || data.chave_pix.trim() === '')) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Chave PIX é obrigatória',
+      path: ['chave_pix'],
+    })
+  }
 })
 
 export const step4Schema = z.object({

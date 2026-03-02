@@ -367,12 +367,22 @@ export default function AdminDashboard() {
 
                         <td className="px-4 py-3 text-mega-text-secondary hidden sm:table-cell">{new Date(c.created_at).toLocaleDateString('pt-BR')}</td>
                         <td className="px-4 py-3 text-right">
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleDelete(c.id) }}
-                            className="text-red-500 hover:text-red-600 text-xs"
-                          >
-                            Excluir
-                          </button>
+                          <div className="flex items-center justify-end gap-3">
+                            <a
+                              href={`/api/candidatos/${c.id}/exportar-contrato`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-mega-teal hover:text-mega-teal-hover text-xs font-medium"
+                              title="Baixar contrato RPA preenchido"
+                            >
+                              Contrato
+                            </a>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleDelete(c.id) }}
+                              className="text-red-500 hover:text-red-600 text-xs"
+                            >
+                              Excluir
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     )

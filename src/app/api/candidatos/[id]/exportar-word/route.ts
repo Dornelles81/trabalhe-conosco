@@ -59,12 +59,15 @@ function row4(l1: string, v1: string, l2: string, v2: string): TableRow {
   })
 }
 
-function formatDate(dateStr: string | null): string {
+function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return '—'
   try {
-    return new Date(dateStr + 'T00:00:00').toLocaleDateString('pt-BR')
+    const normalized = String(dateStr).includes('T') ? String(dateStr) : `${dateStr}T00:00:00`
+    const d = new Date(normalized)
+    if (isNaN(d.getTime())) return '—'
+    return d.toLocaleDateString('pt-BR')
   } catch {
-    return dateStr
+    return '—'
   }
 }
 
@@ -125,7 +128,6 @@ export async function GET(
                 row('Naturalidade', c.naturalidade || '—'),
                 row('Nome do Pai', c.nome_pai || '—'),
                 row('Nome da Mãe', c.nome_mae || '—'),
-                row('Chave PIX', c.pix_nao_possui ? 'Não possui' : (c.chave_pix || '—')),
               ],
             }),
 
@@ -157,7 +159,7 @@ export async function GET(
               rows: [
                 row4('CPF', c.cpf, 'RG', c.rg),
                 row4('Órgão Emissor', c.orgao_emissor || '—', 'Data Emissão', formatDate(c.data_emissao_rg)),
-                row4('CTPS', c.ctps || '—', 'Série', c.serie_ctps || '—'),
+                row('Chave PIX', c.pix_nao_possui ? 'Não possui' : (c.chave_pix || '—')),
               ],
             }),
 

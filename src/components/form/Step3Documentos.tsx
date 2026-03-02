@@ -1,6 +1,6 @@
 'use client'
 
-import { useForm, Controller } from 'react-hook-form'
+import { useForm, useWatch, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { step3Schema, Step3Data, FormData } from '@/lib/validations'
 import Input from '@/components/ui/Input'
@@ -29,10 +29,17 @@ export default function Step3Documentos({ data, updateData, onNext, onPrev }: Pr
       rg: data.rg,
       orgao_emissor: data.orgao_emissor,
       data_emissao_rg: data.data_emissao_rg,
+      pix_nao_possui: data.pix_nao_possui ?? false,
+      chave_pix: data.chave_pix ?? '',
     },
   })
 
+  const pixNaoPossui = useWatch({ control, name: 'pix_nao_possui' })
+
   const onSubmit = (values: Step3Data) => {
+    if (values.pix_nao_possui) {
+      values.chave_pix = ''
+    }
     updateData(values)
     onNext()
   }
@@ -78,6 +85,34 @@ export default function Step3Documentos({ data, updateData, onNext, onPrev }: Pr
             />
           )}
         />
+      </div>
+
+      <div className="border border-mega-border rounded-lg p-4 bg-mega-bg">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs font-semibold text-mega-teal">Dados para Pagamento</p>
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              {...register('pix_nao_possui')}
+              className="w-4 h-4 rounded border-mega-border text-mega-teal accent-mega-teal"
+            />
+            <span className="text-xs text-mega-text-secondary">Não possui chave PIX</span>
+          </label>
+        </div>
+        {!pixNaoPossui ? (
+          <>
+            <Input
+              label="Chave PIX"
+              required
+              {...register('chave_pix')}
+              error={errors.chave_pix?.message}
+              placeholder="CPF, e-mail, telefone ou chave aleatória"
+            />
+            <p className="text-xs text-mega-text-muted mt-1">A chave PIX deve estar no nome do candidato.</p>
+          </>
+        ) : (
+          <p className="text-sm text-mega-text-muted italic">Candidato informou que não possui chave PIX.</p>
+        )}
       </div>
 
       <div className="flex justify-between pt-4">
