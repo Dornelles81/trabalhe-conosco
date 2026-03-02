@@ -149,7 +149,7 @@ function UploadField({
   accept: string
   fileName?: string
   error?: string
-  inputRef: React.RefObject<HTMLInputElement>
+  inputRef: React.RefObject<HTMLInputElement | null>
   withCamera?: boolean
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   onCameraCapture?: (base64: string, fileName: string) => void
@@ -268,7 +268,7 @@ export default function Step5InformacoesAdicionais({ data, updateData, onNext, o
   function makeFileHandler(
     fields: { base64: 'doc_frente' | 'doc_verso'; nome: 'doc_frente_nome' | 'doc_verso_nome'; tipo: 'doc_frente_tipo' | 'doc_verso_tipo' },
     setError: (msg: string) => void,
-    inputRef: React.RefObject<HTMLInputElement>,
+    inputRef: React.RefObject<HTMLInputElement | null>,
   ) {
     return (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0]
