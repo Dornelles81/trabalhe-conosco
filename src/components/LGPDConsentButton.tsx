@@ -54,7 +54,7 @@ export default function LGPDConsentButton() {
               <div>
                 <h3 className="font-semibold text-mega-text mb-1">Quais dados coletamos</h3>
                 <p>
-                  Nome completo, data de nascimento, documentos pessoais (CPF, RG, CTPS, PIS), endereço,
+                  Nome completo, data de nascimento, documentos pessoais (CPF, RG, CTPS), chave PIX, endereço,
                   contatos (telefone e e-mail), escolaridade, experiência profissional e foto do documento de identificação.
                 </p>
               </div>

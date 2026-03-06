@@ -32,7 +32,8 @@ CREATE TABLE IF NOT EXISTS candidatos (
   data_emissao_rg DATE,
   ctps VARCHAR(20),
   serie_ctps VARCHAR(10),
-  pis VARCHAR(20),
+  chave_pix VARCHAR(255),
+  pix_nao_possui BOOLEAN DEFAULT FALSE,
 
   -- Step 4: Família
   possui_dependentes BOOLEAN DEFAULT FALSE,
@@ -47,10 +48,13 @@ CREATE TABLE IF NOT EXISTS candidatos (
   como_soube VARCHAR(100),
   observacoes TEXT,
 
-  -- Documento (foto CNH/RG)
-  documento_foto TEXT,
-  documento_foto_nome VARCHAR(255),
-  documento_foto_tipo VARCHAR(50),
+  -- Documento de Identidade (frente e verso)
+  doc_frente TEXT,
+  doc_frente_nome VARCHAR(255),
+  doc_frente_tipo VARCHAR(100),
+  doc_verso TEXT,
+  doc_verso_nome VARCHAR(255),
+  doc_verso_tipo VARCHAR(100),
 
   -- Currículo
   curriculo TEXT,

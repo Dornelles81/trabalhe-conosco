@@ -70,6 +70,18 @@ export async function POST() {
     `
 
     await sql`ALTER TABLE candidatos ADD COLUMN IF NOT EXISTS premiacao_override NUMERIC(10,2) DEFAULT NULL`
+    await sql`ALTER TABLE candidatos ADD COLUMN IF NOT EXISTS chave_pix VARCHAR(255)`
+    await sql`ALTER TABLE candidatos ADD COLUMN IF NOT EXISTS pix_nao_possui BOOLEAN DEFAULT FALSE`
+    await sql`ALTER TABLE candidatos ADD COLUMN IF NOT EXISTS doc_frente TEXT`
+    await sql`ALTER TABLE candidatos ADD COLUMN IF NOT EXISTS doc_frente_nome VARCHAR(255)`
+    await sql`ALTER TABLE candidatos ADD COLUMN IF NOT EXISTS doc_frente_tipo VARCHAR(100)`
+    await sql`ALTER TABLE candidatos ADD COLUMN IF NOT EXISTS doc_verso TEXT`
+    await sql`ALTER TABLE candidatos ADD COLUMN IF NOT EXISTS doc_verso_nome VARCHAR(255)`
+    await sql`ALTER TABLE candidatos ADD COLUMN IF NOT EXISTS doc_verso_tipo VARCHAR(100)`
+    await sql`ALTER TABLE candidatos ADD COLUMN IF NOT EXISTS curriculo TEXT`
+    await sql`ALTER TABLE candidatos ADD COLUMN IF NOT EXISTS curriculo_nome VARCHAR(255)`
+    await sql`ALTER TABLE candidatos ADD COLUMN IF NOT EXISTS curriculo_tipo VARCHAR(100)`
+    await sql`ALTER TABLE candidatos ADD COLUMN IF NOT EXISTS experiencia_profissional TEXT`
     await sql`CREATE INDEX IF NOT EXISTS idx_candidatos_status ON candidatos(status)`
     await sql`CREATE INDEX IF NOT EXISTS idx_candidatos_created_at ON candidatos(created_at DESC)`
     await sql`CREATE INDEX IF NOT EXISTS idx_dependentes_candidato_id ON dependentes(candidato_id)`

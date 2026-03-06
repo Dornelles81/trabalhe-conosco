@@ -19,6 +19,28 @@ interface Props {
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
+// Comprime imagem para no máximo 1280px e qualidade 0.75 (~200-400KB resultado)
+function compressImage(dataUrl: string): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      let { width, height } = img
+      const MAX = 1280
+      if (width > MAX || height > MAX) {
+        const r = Math.min(MAX / width, MAX / height)
+        width = Math.round(width * r)
+        height = Math.round(height * r)
+      }
+      canvas.width = width
+      canvas.height = height
+      canvas.getContext('2d')?.drawImage(img, 0, 0, width, height)
+      resolve(canvas.toDataURL('image/jpeg', 0.75))
+    }
+    img.src = dataUrl
+  })
+}
+
 // ── Modal de câmera ────────────────────────────────────────────────────────────
 function CameraCapture({
   onCapture,
@@ -36,7 +58,7 @@ function CameraCapture({
   useEffect(() => {
     let cancelled = false
     navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } } })
+      .getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } })
       .then((stream) => {
         if (cancelled) { stream.getTracks().forEach(t => t.stop()); return }
         streamRef.current = stream
@@ -277,10 +299,11 @@ export default function Step5InformacoesAdicionais({ data, updateData, onNext, o
       if (file.size > 5 * 1024 * 1024) { setError('O arquivo deve ter no máximo 5MB'); e.target.value = ''; return }
       if (!IMAGE_TYPES.includes(file.type)) { setError('Formato inválido. Use JPG, PNG ou WebP'); e.target.value = ''; return }
       const reader = new FileReader()
-      reader.onload = () => {
-        setValue(fields.base64, reader.result as string, { shouldValidate: true })
+      reader.onload = async () => {
+        const compressed = await compressImage(reader.result as string)
+        setValue(fields.base64, compressed, { shouldValidate: true })
         setValue(fields.nome, file.name)
-        setValue(fields.tipo, file.type)
+        setValue(fields.tipo, 'image/jpeg')
       }
       reader.readAsDataURL(file)
     }
@@ -290,8 +313,9 @@ export default function Step5InformacoesAdicionais({ data, updateData, onNext, o
   function makeCameraHandler(
     fields: { base64: 'doc_frente' | 'doc_verso'; nome: 'doc_frente_nome' | 'doc_verso_nome'; tipo: 'doc_frente_tipo' | 'doc_verso_tipo' },
   ) {
-    return (base64: string, fileName: string) => {
-      setValue(fields.base64, base64, { shouldValidate: true })
+    return async (base64: string, fileName: string) => {
+      const compressed = await compressImage(base64)
+      setValue(fields.base64, compressed, { shouldValidate: true })
       setValue(fields.nome, fileName)
       setValue(fields.tipo, 'image/jpeg')
     }
@@ -321,7 +345,7 @@ export default function Step5InformacoesAdicionais({ data, updateData, onNext, o
     const file = e.target.files?.[0]
     setCurriculoError('')
     if (!file) return
-    if (file.size > 5 * 1024 * 1024) { setCurriculoError('O arquivo deve ter no máximo 5MB'); e.target.value = ''; return }
+    if (file.size > 1.5 * 1024 * 1024) { setCurriculoError('O arquivo deve ter no máximo 1,5MB'); e.target.value = ''; return }
     const allowed = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
     if (!allowed.includes(file.type)) { setCurriculoError('Formato inválido. Use PDF, DOC ou DOCX'); e.target.value = ''; return }
     const reader = new FileReader()
@@ -441,7 +465,7 @@ export default function Step5InformacoesAdicionais({ data, updateData, onNext, o
         <label className="block text-sm font-medium text-mega-text">
           Currículo <span className="text-mega-text-muted text-xs font-normal">(opcional)</span>
         </label>
-        <p className="text-xs text-mega-text-muted">Anexe seu currículo em PDF, DOC ou DOCX (máx. 5MB).</p>
+        <p className="text-xs text-mega-text-muted">Anexe seu currículo em PDF, DOC ou DOCX (máx. 1,5MB).</p>
 
         {curriculoNome ? (
           <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">

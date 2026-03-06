@@ -34,7 +34,6 @@ interface Candidato {
   data_emissao_rg: string
   ctps: string
   serie_ctps: string
-  pis: string
   possui_dependentes: boolean
   escolaridade: string
   curso: string

@@ -100,8 +100,16 @@ export default function FormWizard() {
       })
 
       if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error || 'Erro ao enviar cadastro')
+        let errorMessage = 'Erro ao enviar cadastro'
+        try {
+          const err = await res.json()
+          errorMessage = err.error || errorMessage
+        } catch {
+          if (res.status === 413) {
+            errorMessage = 'Arquivos muito grandes. Reduza o tamanho das fotos e tente novamente.'
+          }
+        }
+        throw new Error(errorMessage)
       }
 
       router.push('/trabalhe-conosco/confirmacao')
