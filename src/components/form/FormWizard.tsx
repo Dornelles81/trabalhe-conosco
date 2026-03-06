@@ -93,10 +93,19 @@ export default function FormWizard() {
     setSubmitError('')
 
     try {
+      const payload = JSON.stringify(formData)
+      const payloadSizeMB = new Blob([payload]).size / (1024 * 1024)
+      if (payloadSizeMB > 4) {
+        throw new Error(
+          `Os arquivos enviados são muito grandes (${payloadSizeMB.toFixed(1)}MB). ` +
+          'Remova o currículo ou as fotos do documento e tente novamente.'
+        )
+      }
+
       const res = await fetch('/api/candidatos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: payload,
       })
 
       if (!res.ok) {
@@ -105,8 +114,11 @@ export default function FormWizard() {
           const err = await res.json()
           errorMessage = err.error || errorMessage
         } catch {
-          if (res.status === 413) {
-            errorMessage = 'Arquivos muito grandes. Reduza o tamanho das fotos e tente novamente.'
+          // Resposta não é JSON (ex: "Request Entity Too Large" do proxy da Vercel)
+          if (res.status === 413 || res.status === 400) {
+            errorMessage = 'Arquivos muito grandes. Remova o currículo ou reduza as fotos e tente novamente.'
+          } else {
+            errorMessage = `Erro no servidor (${res.status}). Tente novamente.`
           }
         }
         throw new Error(errorMessage)

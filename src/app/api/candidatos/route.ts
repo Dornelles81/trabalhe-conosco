@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
     if (status && search) {
       candidatos = await sql`
         SELECT id, nome_completo, cpf, celular, cargo_pretendido,
-          documento_foto_nome, documento_foto_tipo, curriculo_nome, curriculo_tipo,
+          doc_frente_nome, doc_frente_tipo, curriculo_nome, curriculo_tipo,
           status, created_at
         FROM candidatos
         WHERE status = ${status}
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
     } else if (status) {
       candidatos = await sql`
         SELECT id, nome_completo, cpf, celular, cargo_pretendido,
-          documento_foto_nome, documento_foto_tipo, curriculo_nome, curriculo_tipo,
+          doc_frente_nome, doc_frente_tipo, curriculo_nome, curriculo_tipo,
           status, created_at
         FROM candidatos
         WHERE status = ${status}
@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
     } else if (search) {
       candidatos = await sql`
         SELECT id, nome_completo, cpf, celular, cargo_pretendido,
-          documento_foto_nome, documento_foto_tipo, curriculo_nome, curriculo_tipo,
+          doc_frente_nome, doc_frente_tipo, curriculo_nome, curriculo_tipo,
           status, created_at
         FROM candidatos
         WHERE nome_completo ILIKE ${'%' + search + '%'} OR cpf LIKE ${'%' + search + '%'}
@@ -135,7 +135,7 @@ export async function GET(request: NextRequest) {
     } else {
       candidatos = await sql`
         SELECT id, nome_completo, cpf, celular, cargo_pretendido,
-          documento_foto_nome, documento_foto_tipo, curriculo_nome, curriculo_tipo,
+          doc_frente_nome, doc_frente_tipo, curriculo_nome, curriculo_tipo,
           status, created_at
         FROM candidatos
         ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}

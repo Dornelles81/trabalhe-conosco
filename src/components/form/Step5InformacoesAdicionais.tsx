@@ -19,14 +19,14 @@ interface Props {
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
-// Comprime imagem para no máximo 1280px e qualidade 0.75 (~200-400KB resultado)
+// Comprime imagem para no máximo 900px e qualidade 0.60 (~50-120KB resultado)
 function compressImage(dataUrl: string): Promise<string> {
   return new Promise((resolve) => {
     const img = new Image()
     img.onload = () => {
       const canvas = document.createElement('canvas')
       let { width, height } = img
-      const MAX = 1280
+      const MAX = 900
       if (width > MAX || height > MAX) {
         const r = Math.min(MAX / width, MAX / height)
         width = Math.round(width * r)
@@ -35,7 +35,7 @@ function compressImage(dataUrl: string): Promise<string> {
       canvas.width = width
       canvas.height = height
       canvas.getContext('2d')?.drawImage(img, 0, 0, width, height)
-      resolve(canvas.toDataURL('image/jpeg', 0.75))
+      resolve(canvas.toDataURL('image/jpeg', 0.60))
     }
     img.src = dataUrl
   })
@@ -345,7 +345,7 @@ export default function Step5InformacoesAdicionais({ data, updateData, onNext, o
     const file = e.target.files?.[0]
     setCurriculoError('')
     if (!file) return
-    if (file.size > 1.5 * 1024 * 1024) { setCurriculoError('O arquivo deve ter no máximo 1,5MB'); e.target.value = ''; return }
+    if (file.size > 800 * 1024) { setCurriculoError('O arquivo deve ter no máximo 800KB'); e.target.value = ''; return }
     const allowed = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
     if (!allowed.includes(file.type)) { setCurriculoError('Formato inválido. Use PDF, DOC ou DOCX'); e.target.value = ''; return }
     const reader = new FileReader()
@@ -465,7 +465,7 @@ export default function Step5InformacoesAdicionais({ data, updateData, onNext, o
         <label className="block text-sm font-medium text-mega-text">
           Currículo <span className="text-mega-text-muted text-xs font-normal">(opcional)</span>
         </label>
-        <p className="text-xs text-mega-text-muted">Anexe seu currículo em PDF, DOC ou DOCX (máx. 1,5MB).</p>
+        <p className="text-xs text-mega-text-muted">Anexe seu currículo em PDF, DOC ou DOCX (máx. 800KB).</p>
 
         {curriculoNome ? (
           <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">

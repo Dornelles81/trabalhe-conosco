@@ -17,7 +17,7 @@ interface CandidatoRow {
   cpf: string
   celular: string
   cargo_pretendido: string
-  documento_foto_nome: string | null
+  doc_frente_nome: string | null
   curriculo_nome: string | null
   status: string
   created_at: string
@@ -329,8 +329,8 @@ export default function AdminDashboard() {
                         <td className="px-4 py-3 text-mega-text-secondary hidden lg:table-cell">{c.cargo_pretendido || '—'}</td>
                         <td className="px-4 py-3 hidden sm:table-cell">
                           <div className="flex items-center gap-1.5">
-                            {c.documento_foto_nome ? (
-                              <span title={`Documento: ${c.documento_foto_nome}`}
+                            {c.doc_frente_nome ? (
+                              <span title={`Documento: ${c.doc_frente_nome}`}
                                 className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-600 border border-blue-200">
                                 Doc
                               </span>
