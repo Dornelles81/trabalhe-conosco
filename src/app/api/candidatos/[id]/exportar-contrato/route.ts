@@ -188,16 +188,16 @@ export async function GET(
           },
           children: [
             // ── Cabeçalho ────────────────────────────────────────────────────
-            companyHeader('Mega Feira Tecnologia Para Acessos LTDA'),
-            title('CONTRATO DE PRESTAÇÃO DE SERVIÇOS AUTÔNOMOS - RPA'),
-            subtitle('Operador de Estacionamento | EXPODIRETO 2026 | 08 a 13/03/2026 | Não-Me-Toque/RS'),
+            companyHeader('MEGA FEIRA Tecnologia Para Acessos LTDA'),
+            title('CONTRATO DE PRESTAÇÃO DE SERVIÇOS AUTÔNOMOS – RPA'),
+            subtitle('Operador de Estacionamento  |  EXPODIRETO 2026  |  08 a 13/03/2026  |  Não-Me-Toque/RS'),
 
             // ── QUALIFICAÇÃO DAS PARTES ───────────────────────────────────────
             sectionHeader('QUALIFICAÇÃO DAS PARTES'),
 
             partyLabel('CONTRATANTE:'),
             infoTable([
-              row2('Razão Social', 'MEGA FEIRA TECNOLOGIA PARA ACESSOS LTDA'),
+              row2('Razão Social', 'MEGA FEIRA TECNOLOGIA E OPERAÇÃO EM EVENTOS LTDA'),
               row2('CNPJ / Endereço', '32.311.191/0001-07  |  Rua São Joaquim, 1085 - São Leopoldo/RS'),
               row2('Representante', 'Luís Eduardo Dornelles'),
             ]),
@@ -232,43 +232,55 @@ export async function GET(
 
             clauseTitle('3', 'DA REMUNERAÇÃO'),
             clauseText(
-              'Remuneração de R$ 150,00 por dia trabalhado (total R$ 900,00 pelos 6 dias), acrescida de ajuda de custo de R$ 30,00/dia para alimentação e transporte (total R$ 180,00), de natureza indenizatória e não salarial. O CONTRATADO(A) sem faltas ou atrasos fará jus ao Prêmio Assiduidade de R$ 200,00.'
-            ),
-            clauseText(
-              'Pagamento no dia 13/03/2026 via PIX/transferência, deduzido adiantamento de R$ 100,00 pago em 08/03/2026. Incidem descontos legais obrigatórios (INSS 11%, IRRF e ISSQN) sobre a remuneração, demonstrados no RPA. Ajuda de custo e prêmio assiduidade não integram a base de cálculo de encargos. Inexiste direito a 13º, férias, FGTS ou quaisquer verbas trabalhistas.'
+              'Remuneração de R$ 180,00 (cento e oitenta reais) por dia trabalhado em turno integral, totalizando R$ 1.080,00 (um mil e oitenta reais) para os 6 dias do evento. O CONTRATADO(A) que não registrar faltas durante todo o período contratual fará jus ao Prêmio Assiduidade no valor de R$ 200,00 (duzentos reais), pago juntamente com a remuneração final. O pagamento será realizado no dia 13 de março de 2026, último dia do evento, via transferência/PIX. Sobre o valor da remuneração incidirão os descontos legais obrigatórios (INSS 11%, IRRF e ISSQN conforme legislação vigente), demonstrados no RPA. O CONTRATADO(A) declara estar ciente de que não há direito a 13º salário, férias, FGTS, horas extras, adicionais ou quaisquer outros benefícios trabalhistas.'
             ),
 
-            clauseTitle('4', 'DA NATUREZA AUTÔNOMA - INEXISTÊNCIA DE VÍNCULO EMPREGATÍCIO'),
+            clauseTitle('4', 'AUSÊNCIA DE VÍNCULO EMPREGATÍCIO (ART. 442-B DA CLT)'),
             clauseText(
-              'Este contrato é de natureza estritamente civil. Inexiste relação de emprego entre as partes, uma vez que a prestação de serviços é eventual, sem habitualidade, exclusividade, pessoalidade ou subordinação jurídica. O CONTRATADO(A) declara que: (a) exerce atividade por conta própria; (b) pode prestar serviços a outros contratantes; (c) não integra o quadro permanente da CONTRATANTE. A supervisão operacional constitui simples coordenação técnica. Caso qualquer ação trabalhista seja intentada, o CONTRATADO(A) responsabiliza-se por custas, honorários e eventuais perdas e danos causados à CONTRATANTE.'
+              '4.1. As partes declaram expressamente que a relação é civil, autônoma e eventual, sem subordinação, onerosidade típica de emprego, habitualidade, pessoalidade ou exclusividade forçada. A eventual sugestão de horários não configura controle de jornada. 4.2. O CONTRATADO(A) atua por conta própria, podendo prestar serviços simultâneos a terceiros e assumindo os riscos da atividade. 4.3. Qualquer alegação futura de vínculo empregatício será considerada de má-fé, sujeitando o CONTRATADO(A) ao pagamento de indenização por perdas e danos causados à CONTRATANTE.'
             ),
 
             clauseTitle('5', 'DIREITO DE IMAGEM, VOZ E DADOS BIOMÉTRICOS'),
             clauseText(
-              'O CONTRATADO(A) autoriza expressamente, de forma gratuita e irrevogável pelo prazo de 5 anos, o uso de sua imagem, nome, voz e atributos de personalidade captados durante o evento para divulgação institucional, redes sociais, marketing e registro histórico da MEGA FEIRA, em qualquer mídia. O valor da Cláusula 3 é contraprestação global pelos serviços e pela cessão de imagem. O CONTRATADO(A) autoriza ainda o tratamento de dados biométricos para controle de acesso, nos termos da LGPD (Lei nº 13.709/2018).'
+              'O CONTRATADO(A) autoriza expressamente, de forma gratuita e irrevogável, pelo prazo de 5 (cinco) anos, o uso de sua imagem, nome, voz e demais atributos de personalidade captados durante o evento para: (a) divulgação institucional e comercial da MEGA FEIRA em qualquer mídia; (b) publicações em redes sociais, site oficial e materiais de marketing; (c) apresentações comerciais, portfólio e prospecção de clientes; (d) registro histórico das operações.'
+            ),
+            clauseText(
+              'A autorização abrange fotos, vídeos e qualquer registro audiovisual, individualmente ou em grupo. O CONTRATADO(A) declara que o valor acordado na Cláusula 3 é contraprestação global pelos serviços e pela cessão de imagem. A CONTRATANTE compromete-se a utilizar a imagem de forma ética, sem expor o CONTRATADO(A) a situações vexatórias ou que comprometam sua honra.'
+            ),
+            clauseText(
+              'O CONTRATADO(A) autoriza, ainda, o tratamento de dados biométricos (reconhecimento facial) para fins de controle de acesso e segurança operacional, em conformidade com a LGPD (Lei nº 13.709/2018).'
             ),
 
             clauseTitle('6', 'OBRIGAÇÕES DO CONTRATADO(A)'),
-            bullet('Comparecer nos dias e horários da escala operacional, devidamente uniformizado;'),
+            normalParagraph('São obrigações do CONTRATADO(A):'),
+            bullet('Comparecer no estacionamento da EXPODIRETO 2026 nos dias e horários da feira, devidamente uniformizado;'),
             bullet('Manter postura ética e profissional no trato com o público e colegas;'),
             bullet('Zelar pelos equipamentos fornecidos, respondendo por danos causados por uso indevido;'),
             bullet('Comunicar ausências com antecedência mínima de 24 horas;'),
             bullet('Manter sigilo sobre informações operacionais e comerciais da CONTRATANTE;'),
             bullet('Não portar ou consumir bebidas alcoólicas ou substâncias ilícitas durante o serviço.'),
 
-            clauseTitle('7', 'DA RESCISÃO'),
+            clauseTitle('7', 'OBRIGAÇÕES DA CONTRATANTE'),
+            normalParagraph('São obrigações da MEGA FEIRA:'),
+            bullet('Efetuar o pagamento na forma, valores e datas estipulados na Cláusula 3, com pagamento integral no dia 13/03;'),
+            bullet('Fornecer ao CONTRATADO(A) uniforme e equipamentos necessários para a execução das atividades antes do início do primeiro turno;'),
+            bullet('Disponibilizar as máquinas de pagamento em pleno funcionamento, responsabilizando-se por falhas técnicas dos equipamentos;'),
+            bullet('Disponibilizar local para estacionamento do veículo do CONTRATADO(A) sem qualquer custo durante os dias de prestação de serviços;'),
+            bullet('Emitir o Recibo de Pagamento Autônomo (RPA) com a devida discriminação dos valores pagos e descontos aplicados.'),
+
+            clauseTitle('8', 'DA RESCISÃO'),
             clauseText(
               'O contrato poderá ser rescindido imediatamente, sem ônus para a CONTRATANTE, em caso de: descumprimento de qualquer cláusula; conduta inadequada; ausência injustificada; uso de álcool ou substâncias ilícitas; ou cancelamento do evento por força maior. Em caso de desistência pelo CONTRATADO(A), será pago apenas o valor proporcional aos dias efetivamente trabalhados.'
             ),
 
-            clauseTitle('8', 'DA SAÚDE, SEGURANÇA E CONFIDENCIALIDADE'),
+            clauseTitle('9', 'DA SAÚDE, SEGURANÇA E CONFIDENCIALIDADE'),
             clauseText(
               'O CONTRATADO(A) declara estar em plenas condições físicas para execução das atividades (ambiente externo, condições climáticas variadas, esforço físico moderado), não sendo a CONTRATANTE responsável por acidentes decorrentes de negligência ou doenças preexistentes. O CONTRATADO(A) compromete-se a manter sigilo absoluto sobre informações estratégicas, comerciais e financeiras da CONTRATANTE e seus clientes, durante e após o período contratual, sob pena de indenização por perdas e danos.'
             ),
 
-            clauseTitle('9', 'DISPOSIÇÕES GERAIS'),
+            clauseTitle('10', 'DISPOSIÇÕES GERAIS'),
             clauseText(
-              'Este contrato representa o acordo integral entre as partes. Alterações somente terão validade se feitas por escrito e assinadas por ambas as partes. Se qualquer disposição for considerada inválida, as demais permanecerão em vigor. Fica eleito o Foro da Comarca de Não-Me-Toque/RS, renunciando-se a qualquer outro.'
+              'Este contrato representa o acordo integral entre as partes. Alterações somente terão validade se feitas por escrito e assinadas por ambas as partes. Se qualquer disposição for considerada inválida, as demais permanecerão em vigor. Fica eleito o Foro da Comarca de São Leopoldo RS, renunciando-se a qualquer outro.'
             ),
 
             spacer(),
@@ -292,11 +304,11 @@ export async function GET(
             }),
 
             // ── Assinaturas ──────────────────────────────────────────────────
-            ...signLine('CONTRATANTE', 'MEGA FEIRA TECNOLOGIA PARA ACESSOS LTDA'),
+            ...signLine('CONTRATANTE', 'MEGA FEIRA TECNOLOGIA E OPERAÇÃO EM EVENTOS LTDA'),
             new Paragraph({
               alignment: AlignmentType.CENTER,
               spacing: { before: 25, after: 0 },
-              children: [new TextRun({ text: 'Luís Eduardo Dornelles - Representante Legal', size: 16, font: 'Arial', color: '666666' })],
+              children: [new TextRun({ text: 'Luís Eduardo Dornelles – Representante Legal', size: 16, font: 'Arial', color: '666666' })],
             }),
             ...signLine('CONTRATADO(A)', c.nome_completo),
             new Paragraph({
@@ -349,7 +361,7 @@ export async function GET(
               alignment: AlignmentType.CENTER,
               spacing: { before: 140, after: 0 },
               children: [
-                new TextRun({ text: 'Mega Feira Tecnologia Para Acessos LTDA | megafeira.com | EXPODIRETO 2026', size: 16, font: 'Arial', color: '888888', italics: true }),
+                new TextRun({ text: 'MEGA FEIRA Tecnologia & Operação em Eventos  |  megafeira.com  |  EXPODIRETO 2026', size: 16, font: 'Arial', color: '888888', italics: true }),
               ],
             }),
           ],
