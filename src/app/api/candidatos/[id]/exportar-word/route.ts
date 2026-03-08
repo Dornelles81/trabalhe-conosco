@@ -14,9 +14,13 @@ import {
   HeadingLevel,
 } from 'docx'
 
-function cell(text: string, bold = false, width?: number): TableCell {
+// Larguras das 4 colunas fixas (em percentual): label1=20, value1=30, label2=20, value2=30
+const COL_WIDTHS = [20, 30, 20, 30]
+
+function makeCell(text: string, bold: boolean, width: number, span?: number): TableCell {
   return new TableCell({
-    width: width ? { size: width, type: WidthType.PERCENTAGE } : undefined,
+    width: { size: width, type: WidthType.PERCENTAGE },
+    columnSpan: span,
     borders: {
       top: { style: BorderStyle.SINGLE, size: 1 },
       bottom: { style: BorderStyle.SINGLE, size: 1 },
@@ -26,12 +30,7 @@ function cell(text: string, bold = false, width?: number): TableCell {
     children: [
       new Paragraph({
         children: [
-          new TextRun({
-            text: text || '—',
-            bold,
-            size: 18,
-            font: 'Arial',
-          }),
+          new TextRun({ text: text || '—', bold, size: 18, font: 'Arial' }),
         ],
         spacing: { before: 40, after: 40 },
       }),
@@ -39,23 +38,33 @@ function cell(text: string, bold = false, width?: number): TableCell {
   })
 }
 
-function labelCell(text: string, width?: number): TableCell {
-  return cell(text, true, width)
+function labelCell(text: string, width: number): TableCell {
+  return makeCell(text, true, width)
 }
 
-function valueCell(text: string, width?: number): TableCell {
-  return cell(text, false, width)
+function valueCell(text: string, width: number, span?: number): TableCell {
+  return makeCell(text, false, width, span)
 }
 
-function row(label: string, value: string, labelWidth = 30, valueWidth = 70): TableRow {
+// Linha de largura total: label (20%) + valor que ocupa as 3 colunas restantes (80%)
+function row(label: string, value: string): TableRow {
   return new TableRow({
-    children: [labelCell(label, labelWidth), valueCell(value, valueWidth)],
+    children: [
+      labelCell(label, COL_WIDTHS[0]),
+      valueCell(value, COL_WIDTHS[1] + COL_WIDTHS[2] + COL_WIDTHS[3], 3),
+    ],
   })
 }
 
+// Linha com dois pares label/valor (4 colunas fixas)
 function row4(l1: string, v1: string, l2: string, v2: string): TableRow {
   return new TableRow({
-    children: [labelCell(l1, 20), valueCell(v1, 30), labelCell(l2, 20), valueCell(v2, 30)],
+    children: [
+      labelCell(l1, COL_WIDTHS[0]),
+      valueCell(v1, COL_WIDTHS[1]),
+      labelCell(l2, COL_WIDTHS[2]),
+      valueCell(v2, COL_WIDTHS[3]),
+    ],
   })
 }
 
@@ -195,6 +204,7 @@ export async function GET(
                       ),
                     ],
                   }),
+
                 ]
               : []),
 
@@ -218,33 +228,50 @@ export async function GET(
               ],
             }),
 
-            // Signature
-            new Paragraph({ text: '', spacing: { before: 600 } }),
+            // Declaração
             new Paragraph({
-              alignment: AlignmentType.CENTER,
-              children: [
-                new TextRun({ text: '________________________________________', size: 18, font: 'Arial' }),
-              ],
-            }),
-            new Paragraph({
-              alignment: AlignmentType.CENTER,
-              children: [
-                new TextRun({ text: c.nome_completo, size: 18, font: 'Arial' }),
-              ],
-              spacing: { before: 60 },
-            }),
-            new Paragraph({
-              alignment: AlignmentType.CENTER,
+              spacing: { before: 400, after: 200 },
               children: [
                 new TextRun({
-                  text: `Data: ${new Date().toLocaleDateString('pt-BR')}`,
-                  size: 16,
+                  text: 'Declaro, para os devidos fins, que todas as informações fornecidas neste cadastro são verdadeiras e de minha inteira responsabilidade, estando ciente de que a prestação de informações falsas poderá implicar na desclassificação do processo seletivo.',
+                  size: 18,
                   font: 'Arial',
-                  color: '666666',
+                  italics: true,
                 }),
               ],
-              spacing: { before: 60 },
             }),
+
+            // Assinatura + declaração de recibo (2 vias)
+            ...[1, 2].flatMap((via) => [
+              new Paragraph({
+                spacing: { before: 500, after: 100 },
+                children: [
+                  new TextRun({ text: `Via ${via}`, bold: true, size: 18, font: 'Arial', color: '888888' }),
+                ],
+              }),
+              new Paragraph({
+                spacing: { before: 0, after: 100 },
+                children: [
+                  new TextRun({ text: `Eu, ${c.nome_completo}, declaro que recebi a importância de R$ __________________ da empresa `, size: 18, font: 'Arial' }),
+                  new TextRun({ text: 'Mega Feira', bold: true, size: 18, font: 'Arial' }),
+                  new TextRun({ text: ' na data ____/____/________.', size: 18, font: 'Arial' }),
+                ],
+              }),
+              new Paragraph({ text: '', spacing: { before: 300 } }),
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [
+                  new TextRun({ text: '________________________________________', size: 18, font: 'Arial' }),
+                ],
+              }),
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [
+                  new TextRun({ text: c.nome_completo, size: 18, font: 'Arial' }),
+                ],
+                spacing: { before: 60 },
+              }),
+            ]),
           ],
         },
       ],
