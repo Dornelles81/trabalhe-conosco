@@ -39,7 +39,8 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('Erro ao exportar todos os Word:', error)
-    return NextResponse.json({ error: 'Erro ao exportar' }, { status: 500 })
+    const msg = error instanceof Error ? error.message : String(error)
+    console.error('Erro ao exportar todos os Word:', msg)
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
