@@ -386,6 +386,14 @@ export default function AdminDashboard() {
                             >
                               Contrato
                             </a>
+                            <a
+                              href={`/api/candidatos/${c.id}/exportar-rpa`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-green-600 hover:text-green-700 text-xs font-medium"
+                              title="Baixar recibo RPA (Excel) preenchido"
+                            >
+                              RPA
+                            </a>
                             <button
                               onClick={(e) => { e.stopPropagation(); handleDelete(c.id) }}
                               className="text-red-500 hover:text-red-600 text-xs"
