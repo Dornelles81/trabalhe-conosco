@@ -4,8 +4,8 @@ import ExcelJS from 'exceljs'
 import path from 'path'
 import fs from 'fs'
 
-// Valor base do contrato (R$1.080 líquido = 6 dias × R$180)
-const VALOR_LIQUIDO = 1080
+// Valor base do contrato (R$1.080 líquido + R$200 prêmio assiduidade = R$1.280)
+const VALOR_LIQUIDO = 1280
 
 function valorPorExtenso(valor: number): string {
   const valores: Record<number, string> = {
