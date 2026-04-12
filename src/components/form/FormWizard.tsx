@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import ProgressBar from '@/components/ui/ProgressBar'
 import Button from '@/components/ui/Button'
@@ -9,6 +9,7 @@ import Step2EnderecoContato from './Step2EnderecoContato'
 import Step3Documentos from './Step3Documentos'
 import Step5InformacoesAdicionais from './Step5InformacoesAdicionais'
 import Step6Revisao from './Step6Revisao'
+import LGPDModal from '@/components/LGPDModal'
 import type { FormData } from '@/lib/validations'
 
 const STEP_LABELS = ['Pessoais', 'Endereço', 'Documentos', 'Adicionais', 'Revisão']
@@ -70,6 +71,24 @@ export default function FormWizard({ eventoSlug }: FormWizardProps) {
   const [formData, setFormData] = useState<FormData>(defaultFormData)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  // LGPD: começa bloqueado; libera após aceite (persiste na sessão)
+  const [lgpdAceito, setLgpdAceito] = useState(false)
+
+  useEffect(() => {
+    if (sessionStorage.getItem('lgpd_accepted') === '1') {
+      setLgpdAceito(true)
+    }
+  }, [])
+
+  const handleLgpdAccept = () => {
+    sessionStorage.setItem('lgpd_accepted', '1')
+    setLgpdAceito(true)
+  }
+
+  const handleLgpdRecuse = () => {
+    // Volta para a página anterior (ou home)
+    router.back()
+  }
 
   const updateData = (stepData: Partial<FormData>) => {
     setFormData(prev => ({ ...prev, ...stepData }))
@@ -164,18 +183,27 @@ export default function FormWizard({ eventoSlug }: FormWizardProps) {
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
-      <div className="mb-8">
-        <ProgressBar currentStep={currentStep} totalSteps={5} labels={STEP_LABELS} />
+    <>
+      {/* Modal LGPD — bloqueia o formulário até o candidato aceitar */}
+      <LGPDModal
+        open={!lgpdAceito}
+        onClose={handleLgpdRecuse}
+        onAccept={handleLgpdAccept}
+      />
+
+      <div className="w-full max-w-3xl mx-auto">
+        <div className="mb-8">
+          <ProgressBar currentStep={currentStep} totalSteps={5} labels={STEP_LABELS} />
+        </div>
+        <div className="bg-white border border-mega-border rounded-xl p-6 md:p-8 shadow-sm">
+          {submitError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+              {submitError}
+            </div>
+          )}
+          {renderStep()}
+        </div>
       </div>
-      <div className="bg-white border border-mega-border rounded-xl p-6 md:p-8 shadow-sm">
-        {submitError && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-            {submitError}
-          </div>
-        )}
-        {renderStep()}
-      </div>
-    </div>
+    </>
   )
 }
