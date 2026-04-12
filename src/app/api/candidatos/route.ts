@@ -8,6 +8,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const sql = getDb()
 
+    // Resolve evento_slug → evento_id
+    let evento_id: number | null = null
+    if (body.evento_slug) {
+      const rows = await sql`SELECT id FROM eventos WHERE slug = ${body.evento_slug} AND ativo = TRUE`
+      if (!rows.length) {
+        return NextResponse.json({ error: 'Evento não encontrado ou inativo' }, { status: 400 })
+      }
+      evento_id = rows[0].id
+    }
+
     const [candidato] = await sql`
       INSERT INTO candidatos (
         nome_completo, data_nascimento, sexo, estado_civil, nacionalidade,
@@ -21,7 +31,8 @@ export async function POST(request: NextRequest) {
         doc_frente, doc_frente_nome, doc_frente_tipo,
         doc_verso, doc_verso_nome, doc_verso_tipo,
         curriculo, curriculo_nome, curriculo_tipo,
-        experiencia_profissional
+        experiencia_profissional,
+        evento_id
       ) VALUES (
         ${body.nome_completo}, ${body.data_nascimento || null}, ${body.sexo},
         ${body.estado_civil}, ${body.nacionalidade},
@@ -38,12 +49,13 @@ export async function POST(request: NextRequest) {
         ${body.escolaridade || null}, ${body.curso || null},
         ${body.experiencia_eventos || false}, ${body.experiencia_descricao || null},
         ${body.cargo_pretendido || null}, ${body.disponibilidade || null},
-        ${body.como_soube || null}, ${body.observacoes || null},
+        ${body.como_soude || body.como_soube || null}, ${body.observacoes || null},
         ${body.doc_frente || null}, ${body.doc_frente_nome || null}, ${body.doc_frente_tipo || null},
         ${body.doc_verso || null}, ${body.doc_verso_nome || null}, ${body.doc_verso_tipo || null},
         ${body.curriculo || null}, ${body.curriculo_nome || null},
         ${body.curriculo_tipo || null},
-        ${body.experiencia_profissional || null}
+        ${body.experiencia_profissional || null},
+        ${evento_id}
       )
       RETURNING id
     `
@@ -64,8 +76,8 @@ export async function POST(request: NextRequest) {
     let message = 'Erro ao salvar cadastro'
     if (error instanceof Error) {
       console.error('Detalhes do erro:', error.message)
-      if (error.message.includes('unique')) {
-        message = 'CPF já cadastrado no sistema'
+      if (error.message.includes('unique') || error.message.includes('candidatos_cpf')) {
+        message = 'CPF já cadastrado neste evento'
       } else if (error.message.includes('password authentication')) {
         message = 'Erro de conexão com o banco de dados. Verifique as credenciais.'
       } else if (error.message.includes('connect') || error.message.includes('ENOTFOUND')) {
@@ -87,63 +99,49 @@ export async function GET(request: NextRequest) {
 
     const status = searchParams.get('status')
     const search = searchParams.get('search')
+    const eventoSlug = searchParams.get('evento')
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
     const offset = (page - 1) * limit
 
-    let candidatos
-    let countResult
-
-    if (status && search) {
-      candidatos = await sql`
-        SELECT id, nome_completo, cpf, celular, cargo_pretendido,
-          doc_frente_nome, doc_frente_tipo, curriculo_nome, curriculo_tipo,
-          status, created_at
-        FROM candidatos
-        WHERE status = ${status}
-          AND (nome_completo ILIKE ${'%' + search + '%'} OR cpf LIKE ${'%' + search + '%'})
-        ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}
-      `
-      countResult = await sql`
-        SELECT COUNT(*) as total FROM candidatos
-        WHERE status = ${status}
-          AND (nome_completo ILIKE ${'%' + search + '%'} OR cpf LIKE ${'%' + search + '%'})
-      `
-    } else if (status) {
-      candidatos = await sql`
-        SELECT id, nome_completo, cpf, celular, cargo_pretendido,
-          doc_frente_nome, doc_frente_tipo, curriculo_nome, curriculo_tipo,
-          status, created_at
-        FROM candidatos
-        WHERE status = ${status}
-        ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}
-      `
-      countResult = await sql`SELECT COUNT(*) as total FROM candidatos WHERE status = ${status}`
-    } else if (search) {
-      candidatos = await sql`
-        SELECT id, nome_completo, cpf, celular, cargo_pretendido,
-          doc_frente_nome, doc_frente_tipo, curriculo_nome, curriculo_tipo,
-          status, created_at
-        FROM candidatos
-        WHERE nome_completo ILIKE ${'%' + search + '%'} OR cpf LIKE ${'%' + search + '%'}
-        ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}
-      `
-      countResult = await sql`
-        SELECT COUNT(*) as total FROM candidatos
-        WHERE nome_completo ILIKE ${'%' + search + '%'} OR cpf LIKE ${'%' + search + '%'}
-      `
-    } else {
-      candidatos = await sql`
-        SELECT id, nome_completo, cpf, celular, cargo_pretendido,
-          doc_frente_nome, doc_frente_tipo, curriculo_nome, curriculo_tipo,
-          status, created_at
-        FROM candidatos
-        ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}
-      `
-      countResult = await sql`SELECT COUNT(*) as total FROM candidatos`
+    // Resolve slug → id
+    let eventoId: number | null = null
+    if (eventoSlug) {
+      const rows = await sql`SELECT id FROM eventos WHERE slug = ${eventoSlug}`
+      if (rows.length) eventoId = rows[0].id
     }
 
-    // Counts globais por status (independente do filtro atual)
+    // Monta condições dinamicamente usando CASE para filtros opcionais
+    const candidatos = await sql`
+      SELECT id, nome_completo, cpf, celular, cargo_pretendido,
+        doc_frente_nome, doc_frente_tipo, curriculo_nome, curriculo_tipo,
+        status, evento_id, created_at
+      FROM candidatos
+      WHERE
+        (${eventoId}::int IS NULL OR evento_id = ${eventoId}::int)
+        AND (${status}::text IS NULL OR status = ${status}::text)
+        AND (
+          ${search}::text IS NULL
+          OR nome_completo ILIKE ${'%' + (search || '') + '%'}
+          OR cpf LIKE ${'%' + (search || '') + '%'}
+        )
+      ORDER BY created_at DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `
+
+    const [countResult] = await sql`
+      SELECT COUNT(*) as total FROM candidatos
+      WHERE
+        (${eventoId}::int IS NULL OR evento_id = ${eventoId}::int)
+        AND (${status}::text IS NULL OR status = ${status}::text)
+        AND (
+          ${search}::text IS NULL
+          OR nome_completo ILIKE ${'%' + (search || '') + '%'}
+          OR cpf LIKE ${'%' + (search || '') + '%'}
+        )
+    `
+
+    // Counts por status filtrados pelo evento
     const [statusCounts] = await sql`
       SELECT
         COUNT(*) FILTER (WHERE status = 'novo')       AS novo,
@@ -153,13 +151,14 @@ export async function GET(request: NextRequest) {
         COUNT(*) FILTER (WHERE status = 'contratado') AS contratado,
         COUNT(*)                                      AS total_geral
       FROM candidatos
+      WHERE (${eventoId}::int IS NULL OR evento_id = ${eventoId}::int)
     `
 
     return NextResponse.json({
       candidatos,
-      total: parseInt(countResult[0].total),
+      total: parseInt(countResult.total),
       page,
-      totalPages: Math.ceil(parseInt(countResult[0].total) / limit),
+      totalPages: Math.ceil(parseInt(countResult.total) / limit),
       counts: {
         novo:        parseInt(statusCounts.novo),
         em_analise:  parseInt(statusCounts.em_analise),

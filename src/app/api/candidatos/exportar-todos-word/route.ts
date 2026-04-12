@@ -9,29 +9,32 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status') || ''
+    const eventoSlug = searchParams.get('evento') || ''
 
     const sql = getDb()
 
+    // Resolve slug → id
+    let eventoId: number | null = null
+    if (eventoSlug) {
+      const rows = await sql`SELECT id FROM eventos WHERE slug = ${eventoSlug}`
+      if (rows.length) eventoId = rows[0].id
+    }
+
     // Excluir campos base64 (foto/currículo) para não estourar o limite de resposta do Neon
-    const candidatos = status
-      ? await sql`
-          SELECT id, nome_completo, data_nascimento, sexo, estado_civil, nacionalidade,
-            etnia, possui_deficiencia, tipo_deficiencia, naturalidade, nome_pai, nome_mae,
-            cep, endereco, numero, complemento, bairro, cidade, estado, telefone, celular, email,
-            cpf, rg, orgao_emissor, data_emissao_rg, ctps, serie_ctps, chave_pix, pix_nao_possui,
-            possui_dependentes, escolaridade, curso, cargo_pretendido, disponibilidade,
-            experiencia_eventos, experiencia_descricao, como_soube, experiencia_profissional,
-            observacoes, doc_frente_nome, doc_verso_nome, curriculo_nome, status
-          FROM candidatos WHERE status = ${status} ORDER BY nome_completo`
-      : await sql`
-          SELECT id, nome_completo, data_nascimento, sexo, estado_civil, nacionalidade,
-            etnia, possui_deficiencia, tipo_deficiencia, naturalidade, nome_pai, nome_mae,
-            cep, endereco, numero, complemento, bairro, cidade, estado, telefone, celular, email,
-            cpf, rg, orgao_emissor, data_emissao_rg, ctps, serie_ctps, chave_pix, pix_nao_possui,
-            possui_dependentes, escolaridade, curso, cargo_pretendido, disponibilidade,
-            experiencia_eventos, experiencia_descricao, como_soube, experiencia_profissional,
-            observacoes, doc_frente_nome, doc_verso_nome, curriculo_nome, status
-          FROM candidatos ORDER BY nome_completo`
+    const candidatos = await sql`
+      SELECT id, nome_completo, data_nascimento, sexo, estado_civil, nacionalidade,
+        etnia, possui_deficiencia, tipo_deficiencia, naturalidade, nome_pai, nome_mae,
+        cep, endereco, numero, complemento, bairro, cidade, estado, telefone, celular, email,
+        cpf, rg, orgao_emissor, data_emissao_rg, ctps, serie_ctps, chave_pix, pix_nao_possui,
+        possui_dependentes, escolaridade, curso, cargo_pretendido, disponibilidade,
+        experiencia_eventos, experiencia_descricao, como_soube, experiencia_profissional,
+        observacoes, doc_frente_nome, doc_verso_nome, curriculo_nome, status
+      FROM candidatos
+      WHERE
+        (${status}::text IS NULL OR ${status} = '' OR status = ${status})
+        AND (${eventoId}::int IS NULL OR evento_id = ${eventoId}::int)
+      ORDER BY nome_completo
+    `
 
     if (!candidatos.length) {
       return NextResponse.json({ error: 'Nenhum candidato encontrado' }, { status: 404 })

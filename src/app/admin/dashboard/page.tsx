@@ -5,6 +5,17 @@ import { useRouter } from 'next/navigation'
 import StatusBadge from '@/components/admin/StatusBadge'
 import CandidatoModal from '@/components/admin/CandidatoModal'
 
+interface Evento {
+  id: number
+  slug: string
+  nome: string
+  cidade: string | null
+  ativo: boolean
+  dias_total: number
+  valor_diaria: number
+  premiacao: number
+}
+
 interface EventoConfig {
   dias_total: number
   valor_diaria: number
@@ -39,8 +50,18 @@ const MEIAS = new Set(['Manhã', 'Tarde', 'Noite', 'Meia Diária'])
 
 export default function AdminDashboard() {
   const router = useRouter()
+
+  // ── Eventos ──────────────────────────────────────────────────────────────────
+  const [eventos, setEventos] = useState<Evento[]>([])
+  const [eventoAtual, setEventoAtual] = useState<Evento | null>(null)
+  const [showNovoEvento, setShowNovoEvento] = useState(false)
+  const [novoEventoForm, setNovoEventoForm] = useState({ nome: '', cidade: '', descricao: '', slug: '' })
+  const [savingEvento, setSavingEvento] = useState(false)
+  const [eventoError, setEventoError] = useState('')
+
+  // ── Candidatos ───────────────────────────────────────────────────────────────
   const [candidatos, setCandidatos] = useState<CandidatoRow[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [page, setPage] = useState(1)
@@ -49,24 +70,51 @@ export default function AdminDashboard() {
   const [counts, setCounts] = useState<StatusCounts>({ novo: 0, em_analise: 0, aprovado: 0, reprovado: 0, contratado: 0, total_geral: 0 })
   const [selectedId, setSelectedId] = useState<number | null>(null)
 
-  // Configuração do evento
+  // ── Config do evento ─────────────────────────────────────────────────────────
   const [eventoConfig, setEventoConfig] = useState<EventoConfig>({ dias_total: 6, valor_diaria: 180, premiacao: 0 })
   const [showEventoForm, setShowEventoForm] = useState(false)
   const [eventoFormDias, setEventoFormDias] = useState('')
   const [eventoFormValor, setEventoFormValor] = useState('')
   const [eventoFormPremiacao, setEventoFormPremiacao] = useState('')
-  const [savingEvento, setSavingEvento] = useState(false)
+  const [savingConfig, setSavingConfig] = useState(false)
 
-  // Presença inline
+  // ── Presença inline ──────────────────────────────────────────────────────────
   const [presencaDia, setPresencaDia] = useState<number | null>(null)
   const [presencaMap, setPresencaMap] = useState<Map<number, PresencaEntry>>(new Map())
   const [loadingPresenca, setLoadingPresenca] = useState(false)
   const [updatingIds, setUpdatingIds] = useState<Set<number>>(new Set())
 
+  // ── Carrega lista de eventos ──────────────────────────────────────────────────
+  useEffect(() => {
+    fetch('/api/eventos?todos=1')
+      .then(r => {
+        if (r.status === 401) { router.push('/admin'); return null }
+        return r.json()
+      })
+      .then((data: Evento[] | null) => {
+        if (!data) return
+        setEventos(data)
+        if (data.length > 0) setEventoAtual(data[0])
+      })
+      .catch(console.error)
+  }, [router])
+
+  // ── Carrega config quando evento muda ────────────────────────────────────────
+  useEffect(() => {
+    if (!eventoAtual) return
+    fetch(`/api/evento-config?evento=${eventoAtual.slug}`)
+      .then(r => r.json())
+      .then(d => setEventoConfig(d))
+      .catch(() => {})
+  }, [eventoAtual])
+
+  // ── Busca candidatos ──────────────────────────────────────────────────────────
   const fetchCandidatos = useCallback(async () => {
+    if (!eventoAtual) return
     setLoading(true)
     try {
       const params = new URLSearchParams()
+      params.set('evento', eventoAtual.slug)
       if (search) params.set('search', search)
       if (statusFilter) params.set('status', statusFilter)
       params.set('page', String(page))
@@ -82,19 +130,21 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false)
     }
-  }, [search, statusFilter, page, router])
+  }, [eventoAtual, search, statusFilter, page, router])
 
   useEffect(() => { fetchCandidatos() }, [fetchCandidatos])
 
+  // Reset página ao trocar evento
   useEffect(() => {
-    fetch('/api/evento-config').then(r => r.json()).then(d => setEventoConfig(d)).catch(() => {})
-  }, [])
+    setPage(1)
+    setPresencaDia(null)
+  }, [eventoAtual])
 
-  // Carrega presenças do dia selecionado (todos os contratados)
+  // ── Carrega presenças do dia selecionado ─────────────────────────────────────
   useEffect(() => {
-    if (presencaDia === null) { setPresencaMap(new Map()); return }
+    if (presencaDia === null || !eventoAtual) { setPresencaMap(new Map()); return }
     setLoadingPresenca(true)
-    fetch(`/api/presencas/dia/${presencaDia}`)
+    fetch(`/api/presencas/dia/${presencaDia}?evento=${eventoAtual.slug}`)
       .then(r => r.json())
       .then((rows: Array<{ candidato_id: number; presenca_id: number | null; periodo: string | null }>) => {
         const m = new Map<number, PresencaEntry>()
@@ -103,31 +153,66 @@ export default function AdminDashboard() {
       })
       .catch(console.error)
       .finally(() => setLoadingPresenca(false))
-  }, [presencaDia])
+  }, [presencaDia, eventoAtual])
 
+  // ── Salva config do evento ────────────────────────────────────────────────────
   const saveEventoConfig = async () => {
-    setSavingEvento(true)
-    const res = await fetch('/api/evento-config', {
+    if (!eventoAtual) return
+    setSavingConfig(true)
+    const res = await fetch(`/api/evento-config?evento=${eventoAtual.slug}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ dias_total: eventoFormDias, valor_diaria: eventoFormValor, premiacao: eventoFormPremiacao }),
     })
     if (res.ok) { const d = await res.json(); setEventoConfig(d); setShowEventoForm(false) }
-    setSavingEvento(false)
+    setSavingConfig(false)
   }
 
-  // Alterna presença de um candidato no dia selecionado
-  // tipo: 'Dia Inteiro' | 'Manhã' (proxy para "meia diária" genérica)
+  // ── Cria novo evento ──────────────────────────────────────────────────────────
+  const handleCriarEvento = async () => {
+    setEventoError('')
+    if (!novoEventoForm.nome || !novoEventoForm.slug) {
+      setEventoError('Nome e slug são obrigatórios')
+      return
+    }
+    setSavingEvento(true)
+    try {
+      const res = await fetch('/api/eventos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(novoEventoForm),
+      })
+      const data = await res.json()
+      if (!res.ok) { setEventoError(data.error || 'Erro ao criar evento'); return }
+      setEventos(prev => [data, ...prev])
+      setEventoAtual(data)
+      setShowNovoEvento(false)
+      setNovoEventoForm({ nome: '', cidade: '', descricao: '', slug: '' })
+    } catch {
+      setEventoError('Erro ao criar evento')
+    } finally {
+      setSavingEvento(false)
+    }
+  }
+
+  // ── Gera slug automático a partir do nome ─────────────────────────────────────
+  const gerarSlug = (nome: string) =>
+    nome.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-')
+
+  // ── Presença ──────────────────────────────────────────────────────────────────
   const handlePresenca = async (candidatoId: number, tipo: 'Dia Inteiro' | 'Manhã') => {
     if (presencaDia === null || updatingIds.has(candidatoId)) return
     const current = presencaMap.get(candidatoId)
-    if (current === undefined) return // não está no mapa (não contratado)
+    if (current === undefined) return
 
     const isDI      = current?.periodo === 'Dia Inteiro'
     const isMeia    = current && MEIAS.has(current.periodo)
     const removing  = tipo === 'Dia Inteiro' ? isDI : isMeia
 
-    // Atualização otimista
     const optimistic: PresencaEntry = removing ? null : { id: current?.id ?? -1, periodo: tipo }
     setPresencaMap(prev => new Map([...prev, [candidatoId, optimistic]]))
     setUpdatingIds(prev => new Set([...prev, candidatoId]))
@@ -168,16 +253,127 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-mega-bg">
       {/* Header */}
       <header className="border-b border-mega-border bg-white sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-lg font-bold">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+          <h1 className="text-lg font-bold shrink-0">
             <span className="text-mega-teal">MEGA</span>{' '}
             <span className="text-mega-navy">FEIRA</span>
             <span className="text-mega-text-muted font-normal text-sm ml-2">Admin</span>
           </h1>
-          <button onClick={handleLogout} className="text-sm text-mega-text-secondary hover:text-mega-navy transition-colors">
-            Sair
-          </button>
+
+          {/* Seletor de evento */}
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <span className="text-xs text-mega-text-muted shrink-0 hidden sm:inline">Evento:</span>
+            <select
+              value={eventoAtual?.slug ?? ''}
+              onChange={e => {
+                const ev = eventos.find(x => x.slug === e.target.value)
+                if (ev) setEventoAtual(ev)
+              }}
+              className="flex-1 min-w-0 max-w-xs bg-white border border-mega-border rounded-lg px-3 py-1.5 text-sm text-mega-text focus:outline-none focus:ring-2 focus:ring-mega-teal/30"
+            >
+              {eventos.map(ev => (
+                <option key={ev.slug} value={ev.slug}>
+                  {ev.nome}{ev.cidade ? ` — ${ev.cidade}` : ''}{!ev.ativo ? ' (inativo)' : ''}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => { setShowNovoEvento(v => !v); setEventoError('') }}
+              className="shrink-0 px-3 py-1.5 text-xs font-medium bg-mega-teal hover:bg-mega-teal-hover text-white rounded-lg transition-colors"
+            >
+              + Novo
+            </button>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button onClick={() => router.push('/admin/eventos')} className="text-sm text-mega-teal hover:text-mega-teal-hover transition-colors font-medium shrink-0">
+              Gerenciar Eventos
+            </button>
+            <button onClick={handleLogout} className="text-sm text-mega-text-secondary hover:text-mega-navy transition-colors shrink-0">
+              Sair
+            </button>
+          </div>
         </div>
+
+        {/* Painel: criar novo evento */}
+        {showNovoEvento && (
+          <div className="border-t border-mega-border bg-mega-bg px-4 py-4">
+            <div className="max-w-7xl mx-auto">
+              <p className="text-xs font-semibold text-mega-text-muted uppercase mb-3">Criar Novo Evento</p>
+              <div className="flex flex-wrap gap-3 items-end">
+                <div>
+                  <label className="block text-xs text-mega-text-muted mb-1">Nome *</label>
+                  <input
+                    type="text"
+                    value={novoEventoForm.nome}
+                    onChange={e => {
+                      const nome = e.target.value
+                      setNovoEventoForm(prev => ({
+                        ...prev,
+                        nome,
+                        slug: prev.slug || gerarSlug(nome),
+                      }))
+                    }}
+                    placeholder="Ex: Mega Feira São Paulo"
+                    className="w-52 border border-mega-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mega-teal/30"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-mega-text-muted mb-1">Cidade</label>
+                  <input
+                    type="text"
+                    value={novoEventoForm.cidade}
+                    onChange={e => setNovoEventoForm(prev => ({ ...prev, cidade: e.target.value }))}
+                    placeholder="Ex: São Paulo, SP"
+                    className="w-40 border border-mega-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mega-teal/30"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-mega-text-muted mb-1">
+                    Slug * <span className="text-mega-text-muted font-normal">(URL)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={novoEventoForm.slug}
+                    onChange={e => setNovoEventoForm(prev => ({ ...prev, slug: e.target.value }))}
+                    placeholder="mega-feira-sp"
+                    className="w-44 border border-mega-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mega-teal/30 font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-mega-text-muted mb-1">Descrição</label>
+                  <input
+                    type="text"
+                    value={novoEventoForm.descricao}
+                    onChange={e => setNovoEventoForm(prev => ({ ...prev, descricao: e.target.value }))}
+                    placeholder="Opcional"
+                    className="w-52 border border-mega-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mega-teal/30"
+                  />
+                </div>
+                <button
+                  onClick={handleCriarEvento}
+                  disabled={savingEvento}
+                  className="px-4 py-2 bg-mega-teal hover:bg-mega-teal-hover text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  {savingEvento ? 'Criando...' : 'Criar Evento'}
+                </button>
+                <button
+                  onClick={() => { setShowNovoEvento(false); setEventoError('') }}
+                  className="px-4 py-2 border border-mega-border text-mega-text-secondary hover:text-mega-text rounded-lg text-sm transition-colors"
+                >
+                  Cancelar
+                </button>
+              </div>
+              {novoEventoForm.slug && (
+                <p className="text-xs text-mega-text-muted mt-2">
+                  URL de inscrição:{' '}
+                  <span className="font-mono text-mega-navy">/trabalhe-conosco/{novoEventoForm.slug}</span>
+                </p>
+              )}
+              {eventoError && <p className="text-red-500 text-sm mt-2">{eventoError}</p>}
+            </div>
+          </div>
+        )}
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6">
@@ -213,6 +409,11 @@ export default function AdminDashboard() {
                   <span className="text-amber-600"> &nbsp;·&nbsp; Premiação R$ {Number(eventoConfig.premiacao).toFixed(2).replace('.', ',')}</span>
                 )}
               </span>
+              {eventoAtual && (
+                <span className="text-xs text-mega-text-muted">
+                  · URL: <span className="font-mono">/trabalhe-conosco/{eventoAtual.slug}</span>
+                </span>
+              )}
             </div>
             <span className="text-mega-text-muted text-xs">{showEventoForm ? '▲ Fechar' : '▼ Editar'}</span>
           </button>
@@ -234,9 +435,9 @@ export default function AdminDashboard() {
                   placeholder="0,00"
                   className="w-32 border border-mega-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mega-teal/30" />
               </div>
-              <button onClick={saveEventoConfig} disabled={savingEvento}
+              <button onClick={saveEventoConfig} disabled={savingConfig}
                 className="px-4 py-2 bg-mega-teal hover:bg-mega-teal-hover text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50">
-                {savingEvento ? 'Salvando...' : 'Salvar'}
+                {savingConfig ? 'Salvando...' : 'Salvar'}
               </button>
             </div>
           )}
@@ -261,7 +462,9 @@ export default function AdminDashboard() {
               <option value="contratado">Contratado</option>
             </select>
             <a
-              href={`/api/candidatos/exportar-todos-word${statusFilter ? `?status=${statusFilter}` : ''}`}
+              href={eventoAtual
+                ? `/api/candidatos/exportar-todos-word?evento=${eventoAtual.slug}${statusFilter ? `&status=${statusFilter}` : ''}`
+                : `/api/candidatos/exportar-todos-word${statusFilter ? `?status=${statusFilter}` : ''}`}
               className="inline-flex items-center justify-center gap-2 bg-mega-teal hover:bg-mega-teal-hover text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap"
               title={statusFilter ? `Exportar fichas com status "${statusFilter}" em ZIP` : 'Exportar todas as fichas em ZIP'}
             >
@@ -327,7 +530,7 @@ export default function AdminDashboard() {
                   <tr><td colSpan={colCount} className="px-4 py-8 text-center text-gray-500">Nenhum candidato encontrado</td></tr>
                 ) : (
                   candidatos.map((c) => {
-                    const pres = presencaMap.get(c.id)         // undefined = não contratado / não carregado
+                    const pres = presencaMap.get(c.id)
                     const isContratado = c.status === 'contratado'
                     return (
                       <tr key={c.id}
@@ -359,7 +562,6 @@ export default function AdminDashboard() {
                         </td>
                         <td className="px-4 py-3"><StatusBadge status={c.status} /></td>
 
-                        {/* Coluna de presença (visível quando um dia está selecionado) */}
                         {presencaDia !== null && (
                           <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                             {isContratado ? (
@@ -415,7 +617,7 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between px-4 py-3 border-t border-mega-border">
               <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
                 className="text-sm text-mega-text-secondary hover:text-mega-navy disabled:opacity-30">Anterior</button>
-              <span className="text-sm text-mega-text-muted">Página {page} de {totalPages}</span>
+              <span className="text-sm text-mega-text-muted">Página {page} de {totalPages} · {total} candidatos</span>
               <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
                 className="text-sm text-mega-text-secondary hover:text-mega-navy disabled:opacity-30">Próxima</button>
             </div>
@@ -453,7 +655,6 @@ function PresencaToggle({
 
   return (
     <div className="flex items-center gap-1">
-      {/* Botão Inteira */}
       <button
         onClick={() => onToggle('Dia Inteiro')}
         disabled={isUpdating}
@@ -466,7 +667,6 @@ function PresencaToggle({
       >
         I
       </button>
-      {/* Botão Meia */}
       <button
         onClick={() => onToggle('Manhã')}
         disabled={isUpdating}

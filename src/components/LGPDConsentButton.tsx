@@ -3,13 +3,18 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-export default function LGPDConsentButton() {
+interface LGPDConsentButtonProps {
+  eventoSlug?: string
+}
+
+export default function LGPDConsentButton({ eventoSlug }: LGPDConsentButtonProps) {
   const [open, setOpen] = useState(true)
   const router = useRouter()
 
   const handleAccept = () => {
     setOpen(false)
-    router.push('/trabalhe-conosco')
+    const destino = eventoSlug ? `/trabalhe-conosco/${eventoSlug}` : '/trabalhe-conosco'
+    router.push(destino)
   }
 
   return (

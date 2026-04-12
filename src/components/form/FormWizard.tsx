@@ -60,7 +60,11 @@ const defaultFormData: FormData = {
   experiencia_profissional: '',
 }
 
-export default function FormWizard() {
+interface FormWizardProps {
+  eventoSlug?: string
+}
+
+export default function FormWizard({ eventoSlug }: FormWizardProps) {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState<FormData>(defaultFormData)
@@ -93,7 +97,10 @@ export default function FormWizard() {
     setSubmitError('')
 
     try {
-      const payload = JSON.stringify(formData)
+      const payload = JSON.stringify({
+        ...formData,
+        ...(eventoSlug ? { evento_slug: eventoSlug } : {}),
+      })
       const payloadSizeMB = new Blob([payload]).size / (1024 * 1024)
       if (payloadSizeMB > 4) {
         throw new Error(
@@ -114,7 +121,6 @@ export default function FormWizard() {
           const err = await res.json()
           errorMessage = err.error || errorMessage
         } catch {
-          // Resposta não é JSON (ex: "Request Entity Too Large" do proxy da Vercel)
           if (res.status === 413 || res.status === 400) {
             errorMessage = 'Arquivos muito grandes. Remova o currículo ou reduza as fotos e tente novamente.'
           } else {
@@ -124,7 +130,10 @@ export default function FormWizard() {
         throw new Error(errorMessage)
       }
 
-      router.push('/trabalhe-conosco/confirmacao')
+      const confirmacaoPath = eventoSlug
+        ? `/${eventoSlug}/cadastro/confirmacao`
+        : '/trabalhe-conosco/confirmacao'
+      router.push(confirmacaoPath)
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Erro ao enviar cadastro')
     } finally {
