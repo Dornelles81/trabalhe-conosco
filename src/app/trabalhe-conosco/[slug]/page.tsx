@@ -14,7 +14,7 @@ export default async function TrabalheConoscoEvento({ params }: Props) {
   // Busca o evento diretamente no banco (Server Component)
   const sql = getDb()
   const rows = await sql`
-    SELECT id, slug, nome, cidade, descricao, ativo
+    SELECT id, slug, nome, cidade, local_evento, descricao, ativo
     FROM eventos WHERE slug = ${slug}
   `
 
@@ -33,7 +33,7 @@ export default async function TrabalheConoscoEvento({ params }: Props) {
             Cadastro de <span className="text-mega-teal">Candidato</span>
           </h1>
           <p className="text-mega-text-secondary mt-2 font-medium">
-            {evento.nome}{evento.cidade ? ` — ${evento.cidade}` : ''}
+            {evento.nome}{(evento.local_evento || evento.cidade) ? ` — ${evento.local_evento || evento.cidade}` : ''}
           </p>
           {evento.descricao && (
             <p className="text-mega-text-secondary mt-1 text-sm max-w-xl mx-auto">

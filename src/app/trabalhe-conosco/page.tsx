@@ -9,6 +9,7 @@ interface Evento {
   slug: string
   nome: string
   cidade: string | null
+  local_evento: string | null
   descricao: string | null
 }
 
@@ -18,7 +19,7 @@ export default async function TrabalheConosco() {
 
   try {
     const rows = await sql`
-      SELECT slug, nome, cidade, descricao
+      SELECT slug, nome, cidade, local_evento, descricao
       FROM eventos
       WHERE ativo = TRUE
       ORDER BY created_at ASC
@@ -59,8 +60,8 @@ export default async function TrabalheConosco() {
                     <h2 className="text-lg font-bold text-mega-navy group-hover:text-mega-teal transition-colors">
                       {evento.nome}
                     </h2>
-                    {evento.cidade && (
-                      <p className="text-sm text-mega-text-muted mt-0.5">{evento.cidade}</p>
+                    {(evento.local_evento || evento.cidade) && (
+                      <p className="text-sm text-mega-text-muted mt-0.5">{evento.local_evento || evento.cidade}</p>
                     )}
                   </div>
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200 shrink-0 ml-2">
