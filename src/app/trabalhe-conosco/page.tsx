@@ -3,6 +3,8 @@ import { getDb } from '@/lib/db'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 
+export const dynamic = 'force-dynamic'
+
 interface Evento {
   slug: string
   nome: string

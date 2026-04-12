@@ -4,6 +4,8 @@ import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import LGPDConsentButton from '@/components/LGPDConsentButton'
 
+export const dynamic = 'force-dynamic'
+
 interface Evento {
   slug: string
   nome: string
