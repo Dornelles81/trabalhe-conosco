@@ -19,6 +19,13 @@ interface Evento {
   created_at: string
 }
 
+interface ResultadoMigracao {
+  destino_slug: string
+  destino_nome: string
+  migrados: number
+  duplicados: number
+}
+
 const emptyForm = {
   nome: '', slug: '', nome_evento: '', data_evento: '', local_evento: '',
   cargo_padrao: 'Operador de Estacionamento', dias_total: '6',
@@ -34,6 +41,15 @@ export default function AdminEventos() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [editSlug, setEditSlug] = useState<string | null>(null)
+
+  // Estado do modal de migração
+  const [migrarEvento, setMigrarEvento] = useState<Evento | null>(null)
+  const [migrarDestinos, setMigrarDestinos] = useState<string[]>([])
+  const [migrarModo, setMigrarModo] = useState<'copiar' | 'mover'>('copiar')
+  const [migrarStatusFiltro, setMigrarStatusFiltro] = useState<string>('todos')
+  const [migrarLoading, setMigrarLoading] = useState(false)
+  const [migrarResultado, setMigrarResultado] = useState<{ total_fonte: number; resultado: ResultadoMigracao[] } | null>(null)
+  const [migrarErro, setMigrarErro] = useState('')
 
   const fetchEventos = async () => {
     setLoading(true)
@@ -111,6 +127,62 @@ export default function AdminEventos() {
     fetchEventos()
   }
 
+  const abrirMigrar = (ev: Evento) => {
+    setMigrarEvento(ev)
+    setMigrarDestinos([])
+    setMigrarModo('copiar')
+    setMigrarStatusFiltro('todos')
+    setMigrarResultado(null)
+    setMigrarErro('')
+  }
+
+  const fecharMigrar = () => {
+    setMigrarEvento(null)
+    setMigrarResultado(null)
+    setMigrarErro('')
+  }
+
+  const toggleDestino = (slug: string) => {
+    setMigrarDestinos(prev =>
+      prev.includes(slug) ? prev.filter(s => s !== slug) : [...prev, slug]
+    )
+    // Se selecionar mais de 1 destino e estiver em modo mover, volta para copiar
+    if (migrarModo === 'mover') setMigrarModo('copiar')
+  }
+
+  const executarMigracao = async () => {
+    if (!migrarEvento || !migrarDestinos.length) return
+    setMigrarLoading(true)
+    setMigrarErro('')
+    setMigrarResultado(null)
+    try {
+      const res = await fetch('/api/candidatos/migrar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          origem_slug: migrarEvento.slug,
+          destino_slugs: migrarDestinos,
+          modo: migrarModo,
+          status_filtro: migrarStatusFiltro,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setMigrarErro(data.error || 'Erro ao migrar')
+        return
+      }
+      setMigrarResultado(data)
+    } catch {
+      setMigrarErro('Erro de rede')
+    } finally {
+      setMigrarLoading(false)
+    }
+  }
+
+  const outrosEventos = migrarEvento
+    ? eventos.filter(e => e.slug !== migrarEvento.slug)
+    : []
+
   return (
     <div className="min-h-screen bg-mega-bg">
       <header className="border-b border-mega-border bg-white sticky top-0 z-40">
@@ -131,7 +203,7 @@ export default function AdminEventos() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6">
-        {/* Formulário */}
+        {/* Formulário de criação/edição */}
         {showForm && (
           <div className="bg-white border border-mega-border rounded-xl shadow-sm p-6 mb-6">
             <h2 className="text-base font-semibold text-mega-navy mb-4">
@@ -216,7 +288,7 @@ export default function AdminEventos() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <button onClick={() => handleEdit(ev)}
                           className="text-xs border border-mega-border px-2 py-1 rounded hover:bg-mega-bg transition-colors">
                           Editar
@@ -224,6 +296,10 @@ export default function AdminEventos() {
                         <button onClick={() => toggleAtivo(ev)}
                           className={`text-xs border px-2 py-1 rounded transition-colors ${ev.ativo ? 'border-red-200 text-red-600 hover:bg-red-50' : 'border-green-200 text-green-600 hover:bg-green-50'}`}>
                           {ev.ativo ? 'Desativar' : 'Ativar'}
+                        </button>
+                        <button onClick={() => abrirMigrar(ev)}
+                          className="text-xs border border-blue-200 text-blue-600 hover:bg-blue-50 px-2 py-1 rounded transition-colors">
+                          Migrar
                         </button>
                       </div>
                     </td>
@@ -234,6 +310,160 @@ export default function AdminEventos() {
           )}
         </div>
       </main>
+
+      {/* Modal de migração */}
+      {migrarEvento && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-mega-border flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-base font-bold text-mega-navy">Migrar colaboradores</h2>
+                <p className="text-sm text-mega-text-muted mt-0.5">
+                  Origem: <span className="font-medium text-mega-navy">{migrarEvento.nome_evento || migrarEvento.nome}</span>
+                </p>
+              </div>
+              <button onClick={fecharMigrar} className="text-mega-text-muted hover:text-mega-navy text-xl leading-none mt-0.5">×</button>
+            </div>
+
+            {migrarResultado ? (
+              /* Resultado */
+              <div className="px-6 py-5">
+                <p className="text-sm text-mega-text-secondary mb-4">
+                  Total de colaboradores na origem (com filtro aplicado): <strong>{migrarResultado.total_fonte}</strong>
+                </p>
+                <div className="space-y-3">
+                  {migrarResultado.resultado.map(r => (
+                    <div key={r.destino_slug} className="border border-mega-border rounded-lg p-4">
+                      <p className="font-semibold text-mega-navy text-sm">{r.destino_nome}</p>
+                      <div className="mt-2 flex gap-6 text-sm">
+                        <span className="text-green-700">
+                          <span className="font-bold">{r.migrados}</span> migrado{r.migrados !== 1 ? 's' : ''}
+                        </span>
+                        {r.duplicados > 0 && (
+                          <span className="text-amber-600">
+                            <span className="font-bold">{r.duplicados}</span> já existia{r.duplicados !== 1 ? 'm' : ''} (CPF duplicado)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={fecharMigrar}
+                  className="mt-5 w-full bg-mega-teal hover:bg-mega-teal-hover text-white font-semibold py-2 rounded-lg text-sm transition-colors"
+                >
+                  Fechar
+                </button>
+              </div>
+            ) : (
+              /* Formulário de migração */
+              <div className="px-6 py-5 space-y-5">
+                {/* Destinos */}
+                <div>
+                  <p className="text-xs font-semibold text-mega-text-muted uppercase mb-2">Evento(s) de destino</p>
+                  {outrosEventos.length === 0 ? (
+                    <p className="text-sm text-mega-text-muted italic">Nenhum outro evento cadastrado.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {outrosEventos.map(ev => (
+                        <label key={ev.slug} className="flex items-center gap-3 cursor-pointer group">
+                          <input
+                            type="checkbox"
+                            checked={migrarDestinos.includes(ev.slug)}
+                            onChange={() => toggleDestino(ev.slug)}
+                            className="w-4 h-4 accent-mega-teal"
+                          />
+                          <span className="text-sm text-mega-text group-hover:text-mega-navy transition-colors">
+                            {ev.nome_evento || ev.nome}
+                            {!ev.ativo && <span className="ml-1.5 text-xs text-red-400">(inativo)</span>}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Filtro de status */}
+                <div>
+                  <p className="text-xs font-semibold text-mega-text-muted uppercase mb-2">Quais colaboradores migrar</p>
+                  <select
+                    value={migrarStatusFiltro}
+                    onChange={e => setMigrarStatusFiltro(e.target.value)}
+                    className="w-full border border-mega-border rounded-lg px-3 py-2 text-sm text-mega-text focus:outline-none focus:ring-2 focus:ring-mega-teal/30"
+                  >
+                    <option value="todos">Todos</option>
+                    <option value="aprovado">Apenas aprovados</option>
+                    <option value="contratado">Apenas contratados</option>
+                    <option value="aprovado_contratado">Aprovados + Contratados</option>
+                    <option value="novo">Apenas novos</option>
+                    <option value="em_analise">Apenas em análise</option>
+                  </select>
+                </div>
+
+                {/* Modo */}
+                <div>
+                  <p className="text-xs font-semibold text-mega-text-muted uppercase mb-2">Modo</p>
+                  <div className="flex gap-3">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="migrar_modo"
+                        value="copiar"
+                        checked={migrarModo === 'copiar'}
+                        onChange={() => setMigrarModo('copiar')}
+                        className="accent-mega-teal"
+                      />
+                      <span className="text-sm text-mega-text">Copiar</span>
+                    </label>
+                    <label className={`flex items-center gap-2 ${migrarDestinos.length > 1 ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}>
+                      <input
+                        type="radio"
+                        name="migrar_modo"
+                        value="mover"
+                        checked={migrarModo === 'mover'}
+                        onChange={() => setMigrarModo('mover')}
+                        disabled={migrarDestinos.length > 1}
+                        className="accent-mega-teal"
+                      />
+                      <span className="text-sm text-mega-text">Mover</span>
+                    </label>
+                  </div>
+                  <p className="text-xs text-mega-text-muted mt-1.5">
+                    {migrarModo === 'copiar'
+                      ? 'Cria cópias no(s) destino(s). Os colaboradores permanecem no evento de origem.'
+                      : 'Remove do evento de origem e move para o destino. Status é mantido.'}
+                  </p>
+                  {migrarDestinos.length > 1 && (
+                    <p className="text-xs text-amber-600 mt-1">Modo "Mover" não disponível com múltiplos destinos.</p>
+                  )}
+                </div>
+
+                {migrarErro && (
+                  <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{migrarErro}</p>
+                )}
+
+                {/* Ações */}
+                <div className="flex gap-3 pt-1">
+                  <button
+                    onClick={executarMigracao}
+                    disabled={migrarLoading || migrarDestinos.length === 0}
+                    className="flex-1 bg-mega-teal hover:bg-mega-teal-hover text-white font-semibold py-2 rounded-lg text-sm transition-colors disabled:opacity-50"
+                  >
+                    {migrarLoading ? 'Migrando...' : `Migrar para ${migrarDestinos.length} destino${migrarDestinos.length !== 1 ? 's' : ''}`}
+                  </button>
+                  <button
+                    onClick={fecharMigrar}
+                    className="border border-mega-border px-4 py-2 rounded-lg text-sm hover:bg-mega-bg transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
