@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getDb } from '@/lib/db'
 import { empresaConfig } from '@/lib/feira.config'
+import LGPDConsentButton from '@/components/LGPDConsentButton'
 
 interface Evento {
   id: number
@@ -73,7 +74,7 @@ export default async function EventoPage({ params }: { params: Promise<{ slug: s
             Estamos em busca de profissionais dedicados para este evento.
             Preencha seu cadastro e venha trabalhar conosco!
           </p>
-          <LGPDButton slug={slug} />
+          <LGPDConsentButton destino={`/${slug}/cadastro`} />
         </div>
       </main>
 
@@ -85,14 +86,3 @@ export default async function EventoPage({ params }: { params: Promise<{ slug: s
   )
 }
 
-// Componente inline do botão LGPD (server component com navegação via Link)
-function LGPDButton({ slug }: { slug: string }) {
-  return (
-    <Link
-      href={`/${slug}/cadastro`}
-      className="inline-block bg-mega-teal hover:bg-mega-teal-hover text-white font-semibold px-10 py-4 rounded-full text-lg transition-colors shadow-md hover:shadow-lg"
-    >
-      Cadastre-se Agora
-    </Link>
-  )
-}

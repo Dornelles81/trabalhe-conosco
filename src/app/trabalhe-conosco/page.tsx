@@ -1,7 +1,7 @@
-import Link from 'next/link'
 import { getDb } from '@/lib/db'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import EventosComLGPD from '@/components/EventosComLGPD'
 
 export const dynamic = 'force-dynamic'
 
@@ -48,38 +48,7 @@ export default async function TrabalheConosco() {
             <p className="text-sm mt-2">Volte em breve!</p>
           </div>
         ) : (
-          <div className="max-w-3xl mx-auto grid gap-4 sm:grid-cols-2">
-            {eventos.map((evento) => (
-              <Link
-                key={evento.slug}
-                href={`/trabalhe-conosco/${evento.slug}`}
-                className="bg-white border border-mega-border rounded-xl p-6 shadow-sm hover:shadow-md hover:border-mega-teal transition-all group"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h2 className="text-lg font-bold text-mega-navy group-hover:text-mega-teal transition-colors">
-                      {evento.nome}
-                    </h2>
-                    {(evento.local_evento || evento.cidade) && (
-                      <p className="text-sm text-mega-text-muted mt-0.5">{evento.local_evento || evento.cidade}</p>
-                    )}
-                  </div>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200 shrink-0 ml-2">
-                    Aberto
-                  </span>
-                </div>
-                {evento.descricao && (
-                  <p className="text-sm text-mega-text-secondary line-clamp-2 mb-4">{evento.descricao}</p>
-                )}
-                <span className="inline-flex items-center gap-1 text-sm font-semibold text-mega-teal group-hover:gap-2 transition-all">
-                  Inscrever-se
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </span>
-              </Link>
-            ))}
-          </div>
+          <EventosComLGPD eventos={eventos} variante="completo" />
         )}
       </main>
       <Footer />

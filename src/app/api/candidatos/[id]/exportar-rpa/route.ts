@@ -4,17 +4,29 @@ import ExcelJS from 'exceljs'
 import path from 'path'
 import fs from 'fs'
 
-// Valor base do contrato (R$1.080 líquido + R$200 prêmio assiduidade = R$1.280)
-const VALOR_LIQUIDO = 1280
-
-function valorPorExtenso(valor: number): string {
-  const valores: Record<number, string> = {
-    450: 'Quatrocentos e cinquenta reais',
-    900: 'Novecentos reais',
-    1080: 'Um mil e oitenta reais',
-    1280: 'Um mil, duzentos e oitenta reais',
+function valorPorExtenso(n: number): string {
+  const int = Math.round(n)
+  if (int === 0) return 'zero reais'
+  const unidades = ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove',
+    'dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove']
+  const dezenas = ['', '', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa']
+  const centenas = ['', 'cento', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos',
+    'seiscentos', 'setecentos', 'oitocentos', 'novecentos']
+  function trecho(x: number): string {
+    const p: string[] = []
+    const c = Math.floor(x / 100), r = x % 100
+    if (c > 0) p.push(x === 100 ? 'cem' : centenas[c])
+    if (r > 0) {
+      if (r < 20) p.push(unidades[r])
+      else { const d2 = Math.floor(r / 10), u = r % 10; p.push(u > 0 ? `${dezenas[d2]} e ${unidades[u]}` : dezenas[d2]) }
+    }
+    return p.join(' e ')
   }
-  return valores[valor] ?? `${valor.toFixed(2).replace('.', ',')} reais`
+  const partes: string[] = []
+  if (int >= 1000) { const mil = Math.floor(int / 1000); partes.push(mil === 1 ? 'um mil' : `${trecho(mil)} mil`) }
+  const r = int % 1000
+  if (r > 0) partes.push(trecho(r))
+  return partes.join(', ') + ' reais'
 }
 
 export async function GET(
@@ -31,6 +43,23 @@ export async function GET(
     }
 
     const c = candidatos[0]
+
+    // ── Busca configurações do evento ─────────────────────────────────────────
+    let diasTotal = 6, valorDiaria = 180, premiacaoBase = 0
+    let dataPagamento: Date = new Date(2026, 2, 13) // fallback
+    if (c.evento_id) {
+      const evRows = await sql`
+        SELECT dias_total, valor_diaria, premiacao, data_pagamento FROM eventos WHERE id = ${c.evento_id}
+      `
+      if (evRows.length) {
+        diasTotal = Number(evRows[0].dias_total ?? 6)
+        valorDiaria = Number(evRows[0].valor_diaria ?? 180)
+        premiacaoBase = Number(evRows[0].premiacao ?? 0)
+        if (evRows[0].data_pagamento) dataPagamento = new Date(evRows[0].data_pagamento)
+      }
+    }
+    const premiacao = Number(c.premiacao_override ?? premiacaoBase)
+    const VALOR_LIQUIDO = Math.round(valorDiaria * diasTotal + premiacao)
 
     // ── Dados formatados ──────────────────────────────────────────────────────
     const cpfFormatado = c.cpf ? `CPF: ${c.cpf}` : 'CPF: ___.___.___-__'
@@ -75,7 +104,7 @@ export async function GET(
       setCellValue(sheet, base + 13, 1, cidadeBairro)
 
       // Data (C15 / C35)
-      sheet.getCell(base + 15, 3).value = new Date(2026, 2, 13)
+      sheet.getCell(base + 15, 3).value = dataPagamento
 
       // Valor Líquido (E18 / E38) — valor raiz; fórmulas dependem dele
       sheet.getCell(base + 18, 5).value = VALOR_LIQUIDO
