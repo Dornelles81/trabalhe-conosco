@@ -7,10 +7,11 @@ import LGPDModal from './LGPDModal'
 interface LGPDConsentButtonProps {
   eventoSlug?: string
   destino?: string   // sobrescreve a URL de destino padrão
+  autoOpen?: boolean // abre o modal automaticamente ao carregar (padrão: true)
 }
 
-export default function LGPDConsentButton({ eventoSlug, destino }: LGPDConsentButtonProps) {
-  const [open, setOpen] = useState(false)
+export default function LGPDConsentButton({ eventoSlug, destino, autoOpen = true }: LGPDConsentButtonProps) {
+  const [open, setOpen] = useState(autoOpen)
   const router = useRouter()
 
   const handleAccept = () => {
