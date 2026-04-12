@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ProgressBar from '@/components/ui/ProgressBar'
 import Button from '@/components/ui/Button'
@@ -71,24 +71,13 @@ export default function FormWizard({ eventoSlug }: FormWizardProps) {
   const [formData, setFormData] = useState<FormData>(defaultFormData)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
-  // LGPD: começa bloqueado; libera após aceite (persiste na sessão)
+  // LGPD: bloqueia o formulário até aceite. Sem persistência —
+  // o modal aparece sempre que a página do formulário é carregada.
   const [lgpdAceito, setLgpdAceito] = useState(false)
 
-  useEffect(() => {
-    if (sessionStorage.getItem('lgpd_accepted') === '1') {
-      setLgpdAceito(true)
-    }
-  }, [])
+  const handleLgpdAccept = () => setLgpdAceito(true)
 
-  const handleLgpdAccept = () => {
-    sessionStorage.setItem('lgpd_accepted', '1')
-    setLgpdAceito(true)
-  }
-
-  const handleLgpdRecuse = () => {
-    // Volta para a página anterior (ou home)
-    router.back()
-  }
+  const handleLgpdRecuse = () => router.back()
 
   const updateData = (stepData: Partial<FormData>) => {
     setFormData(prev => ({ ...prev, ...stepData }))
