@@ -4,6 +4,8 @@ import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import FormWizard from '@/components/form/FormWizard'
 
+export const dynamic = 'force-dynamic'
+
 interface Props {
   params: Promise<{ slug: string }>
 }
@@ -44,7 +46,7 @@ export default async function TrabalheConoscoEvento({ params }: Props) {
             Preencha todas as etapas para completar seu cadastro
           </p>
         </div>
-        <FormWizard eventoSlug={slug} />
+        <FormWizard eventoSlug={slug} key={slug} />
       </main>
       <Footer />
     </div>

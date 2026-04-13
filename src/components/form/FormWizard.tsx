@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ProgressBar from '@/components/ui/ProgressBar'
-import Button from '@/components/ui/Button'
 import Step1DadosPessoais from './Step1DadosPessoais'
 import Step2EnderecoContato from './Step2EnderecoContato'
 import Step3Documentos from './Step3Documentos'

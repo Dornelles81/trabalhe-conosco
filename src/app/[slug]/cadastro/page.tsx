@@ -4,6 +4,8 @@ import FormWizard from '@/components/form/FormWizard'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 
+export const dynamic = 'force-dynamic'
+
 async function getEvento(slug: string) {
   try {
     const sql = getDb()
@@ -36,7 +38,7 @@ export default async function CadastroPage({ params }: { params: Promise<{ slug:
             Preencha todas as etapas para completar seu cadastro
           </p>
         </div>
-        <FormWizard eventoSlug={slug} />
+        <FormWizard eventoSlug={slug} key={slug} />
       </main>
       <Footer />
     </div>
