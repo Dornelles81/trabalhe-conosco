@@ -15,6 +15,7 @@ export default function LGPDConsentButton({ eventoSlug, destino, autoOpen = true
   const router = useRouter()
 
   const handleAccept = () => {
+    sessionStorage.setItem('lgpd_accepted', '1')
     setOpen(false)
     const url = destino ?? (eventoSlug ? `/trabalhe-conosco/${eventoSlug}` : '/trabalhe-conosco')
     router.push(url)

@@ -24,6 +24,7 @@ export default function EventosComLGPD({ eventos, variante = 'completo' }: Event
 
   const handleAccept = () => {
     if (!slugSelecionado) return
+    sessionStorage.setItem('lgpd_accepted', '1')
     setSlugSelecionado(null)
     router.push(`/trabalhe-conosco/${slugSelecionado}`)
   }
