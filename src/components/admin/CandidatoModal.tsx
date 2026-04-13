@@ -59,6 +59,7 @@ interface Candidato {
   status: string
   created_at: string
   premiacao_override: number | null
+  evento_id: number
   dependentes: { id: number; nome: string; data_nascimento: string; parentesco: string; cpf: string }[]
 }
 
@@ -111,6 +112,52 @@ export default function CandidatoModal({ candidatoId, onClose, onStatusChange }:
   const [savingDia, setSavingDia] = useState(false)
   const [diaError, setDiaError] = useState('')
 
+  // Enviar para outro evento
+  interface EventoOpcao { id: number; slug: string; nome: string; nome_evento: string | null }
+  const [enviarAberto, setEnviarAberto] = useState(false)
+  const [enviarEventos, setEnviarEventos] = useState<EventoOpcao[]>([])
+  const [enviarSlug, setEnviarSlug] = useState('')
+  const [enviarModo, setEnviarModo] = useState<'copiar' | 'mover'>('copiar')
+  const [enviarLoading, setEnviarLoading] = useState(false)
+  const [enviarResultado, setEnviarResultado] = useState<{ migrado: boolean; motivo?: string; destino_nome: string } | null>(null)
+  const [enviarErro, setEnviarErro] = useState('')
+
+  const abrirEnviar = async () => {
+    setEnviarAberto(true)
+    setEnviarResultado(null)
+    setEnviarErro('')
+    setEnviarSlug('')
+    setEnviarModo('copiar')
+    const res = await fetch('/api/eventos?todos=1')
+    const data = await res.json()
+    const lista = Array.isArray(data) ? data : []
+    // Filtra o evento atual do candidato
+    const filtrados = candidato ? lista.filter((e: EventoOpcao) => e.id !== candidato.evento_id) : lista
+    setEnviarEventos(filtrados)
+    if (filtrados.length > 0) setEnviarSlug(filtrados[0].slug)
+  }
+
+  const confirmarEnviar = async () => {
+    if (!candidatoId || !enviarSlug) return
+    setEnviarLoading(true)
+    setEnviarErro('')
+    try {
+      const res = await fetch(`/api/candidatos/${candidatoId}/copiar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ destino_slug: enviarSlug, modo: enviarModo }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setEnviarErro(data.error || 'Erro ao enviar'); return }
+      setEnviarResultado(data)
+      if (enviarModo === 'mover' && data.migrado) onStatusChange()
+    } catch {
+      setEnviarErro('Erro de rede')
+    } finally {
+      setEnviarLoading(false)
+    }
+  }
+
   // Premiação override
   const [editingPremiacao, setEditingPremiacao] = useState(false)
   const [premiacaoInput, setPremiacaoInput] = useState('')
@@ -121,6 +168,9 @@ export default function CandidatoModal({ candidatoId, onClose, onStatusChange }:
     setLoading(true)
     setActiveTab('dados')
     setSelectedDia(null)
+    setEnviarAberto(false)
+    setEnviarResultado(null)
+    setEnviarErro('')
     fetch(`/api/candidatos/${candidatoId}`)
       .then(res => res.json())
       .then(data => setCandidato(data))
@@ -678,6 +728,86 @@ export default function CandidatoModal({ candidatoId, onClose, onStatusChange }:
               >
                 Exportar Word
               </button>
+            </div>
+
+            {/* Enviar para outro evento */}
+            <div className="mt-3 border-t border-mega-border pt-3">
+              {!enviarAberto ? (
+                <button
+                  onClick={abrirEnviar}
+                  className="text-xs text-mega-blue hover:text-mega-navy border border-mega-border hover:border-mega-blue px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  Enviar para outro evento…
+                </button>
+              ) : enviarResultado ? (
+                <div className={`rounded-lg px-4 py-3 text-sm flex items-start justify-between gap-3 ${enviarResultado.migrado ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200'}`}>
+                  <div>
+                    {enviarResultado.migrado ? (
+                      <p className="text-green-700 font-medium">
+                        {enviarModo === 'mover' ? 'Movido' : 'Copiado'} para <strong>{enviarResultado.destino_nome}</strong> com sucesso.
+                      </p>
+                    ) : (
+                      <p className="text-amber-700 font-medium">
+                        CPF já cadastrado em <strong>{enviarResultado.destino_nome}</strong> — registro ignorado.
+                      </p>
+                    )}
+                  </div>
+                  <button onClick={() => { setEnviarAberto(false); setEnviarResultado(null) }} className="text-mega-text-muted hover:text-mega-text text-lg leading-none flex-shrink-0">×</button>
+                </div>
+              ) : (
+                <div className="border border-mega-border rounded-lg px-4 py-3 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold text-mega-text-muted uppercase">Enviar para outro evento</p>
+                    <button onClick={() => setEnviarAberto(false)} className="text-mega-text-muted hover:text-mega-text text-lg leading-none">×</button>
+                  </div>
+
+                  {enviarEventos.length === 0 ? (
+                    <p className="text-xs text-mega-text-muted">Nenhum outro evento disponível.</p>
+                  ) : (
+                    <>
+                      <div>
+                        <label className="block text-xs text-mega-text-muted mb-1">Destino</label>
+                        <select
+                          value={enviarSlug}
+                          onChange={e => setEnviarSlug(e.target.value)}
+                          className="w-full border border-mega-border rounded-lg px-3 py-2 text-sm text-mega-text focus:outline-none focus:border-mega-teal"
+                        >
+                          {enviarEventos.map(ev => (
+                            <option key={ev.slug} value={ev.slug}>
+                              {ev.nome_evento || ev.nome}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="flex gap-4">
+                        <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                          <input type="radio" name="enviar_modo" checked={enviarModo === 'copiar'} onChange={() => setEnviarModo('copiar')} />
+                          <span className="text-mega-text">Copiar</span>
+                          <span className="text-mega-text-muted">(mantém no evento atual)</span>
+                        </label>
+                        <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                          <input type="radio" name="enviar_modo" checked={enviarModo === 'mover'} onChange={() => setEnviarModo('mover')} />
+                          <span className="text-mega-text">Mover</span>
+                          <span className="text-mega-text-muted">(remove do atual)</span>
+                        </label>
+                      </div>
+
+                      {enviarErro && (
+                        <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">{enviarErro}</p>
+                      )}
+
+                      <button
+                        onClick={confirmarEnviar}
+                        disabled={enviarLoading || !enviarSlug}
+                        className="w-full py-2 rounded-lg bg-mega-blue hover:bg-mega-blue-hover text-white text-sm font-semibold transition-colors disabled:opacity-50"
+                      >
+                        {enviarLoading ? 'Enviando…' : `Confirmar ${enviarModo === 'mover' ? 'mover' : 'copiar'}`}
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         ) : (
